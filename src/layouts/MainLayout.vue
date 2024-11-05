@@ -1,40 +1,51 @@
+<script setup lang="ts">
+import { Auth, getAuth, onAuthStateChanged, signOut } from 'firebase/auth';
+import { onMounted, ref } from 'vue';
+import { useRouter } from 'vue-router';
+
+const router = useRouter();
+
+const isLoggedIn = ref(false);
+
+let auth: Auth;
+onMounted(() => {
+  auth = getAuth();
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      isLoggedIn.value = true;
+    } else {
+      isLoggedIn.value = false;
+    }
+  });
+});
+
+const handleSignOut = () => {
+  signOut(auth).then(() => {
+    router.push('/');
+  });
+};
+</script>
+
 <template>
   <q-layout view="lHh Lpr lFf">
-    <q-header elevated>
-      <q-toolbar>
-        <q-btn
-          flat
-          dense
-          round
-          icon="menu"
-          aria-label="Menu"
-          @click="toggleLeftDrawer"
-        />
+    <q-header>
+      <q-toolbar class="bg-pink-5">
+        <q-toolbar-title>Ahmad Chat App</q-toolbar-title>
 
-        <q-toolbar-title> Quasar App </q-toolbar-title>
-
-        <div>Quasar v{{ $q.version }}</div>
+        <div>
+          <q-btn
+            label="sign out"
+            color="white"
+            text-color="negative"
+            v-if="isLoggedIn"
+            @click="handleSignOut"
+          />
+        </div>
       </q-toolbar>
     </q-header>
-
-    <q-drawer v-model="leftDrawerOpen" show-if-above bordered> </q-drawer>
 
     <q-page-container>
       <router-view />
     </q-page-container>
   </q-layout>
 </template>
-
-<script setup lang="ts">
-import { ref } from 'vue';
-
-defineOptions({
-  name: 'MainLayout',
-});
-
-const leftDrawerOpen = ref(false);
-
-function toggleLeftDrawer() {
-  leftDrawerOpen.value = !leftDrawerOpen.value;
-}
-</script>

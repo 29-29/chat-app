@@ -1,10 +1,15 @@
 import { RouteRecordRaw } from 'vue-router';
 
+import LandingPage from 'src/pages/LandingPage.vue';
+
 const routes: RouteRecordRaw[] = [
   {
     path: '/',
-    component: () => import('layouts/MainLayout.vue'),
-    children: [{ path: '', component: () => import('pages/IndexPage.vue') }],
+    component: LandingPage,
+  },
+  {
+    path: '/chats',
+    component: () => import('src/pages/IndexPage.vue'),
   },
 
   // Always leave this as last one,

@@ -15,6 +15,16 @@ const routes: RouteRecordRaw[] = [
       },
     ],
   },
+  {
+    path: '/chat',
+    component: () => import('src/layouts/ChatLayout.vue'),
+    children: [
+      {
+        path: ':id',
+        component: () => import('src/pages/ChatPage.vue'),
+      },
+    ],
+  },
 
   // Always leave this as last one,
   // but you can also remove it

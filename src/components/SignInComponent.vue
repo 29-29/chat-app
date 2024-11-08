@@ -7,8 +7,7 @@ const router = useRouter();
 const signInWithGoogle = () => {
   const provider = new GoogleAuthProvider();
   signInWithPopup(getAuth(), provider)
-    .then((result) => {
-      console.log('successfully signed in!', result);
+    .then(() => {
       router.push('/chats').catch((error) => {
         console.error('failed to push route', error);
       });

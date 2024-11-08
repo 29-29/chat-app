@@ -1,6 +1,8 @@
 import { getAuth, onAuthStateChanged, signOut, User } from 'firebase/auth';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
+import { db } from 'src/boot/firebase';
 
 // Move user ref outside the function to make it a singleton
 export const user = ref<User | null>(null);
@@ -10,20 +12,34 @@ export function useAuth() {
   const router = useRouter();
   const isLoggedIn = ref(false);
 
+  const createUserIfNotExists = async (currentUser: User) => {
+    const userRef = doc(db, 'users', currentUser.uid);
+    const userDoc = await getDoc(userRef);
+
+    if (!userDoc.exists()) {
+      await setDoc(userRef, {
+        displayName: currentUser.displayName,
+        photoURL: currentUser.photoURL,
+        rooms: [],
+      });
+    }
+  };
+
   const initAuth = () => {
-    onAuthStateChanged(auth, (currentUser) => {
+    onAuthStateChanged(auth, async (currentUser) => {
       user.value = currentUser;
       isLoggedIn.value = !!currentUser;
 
-      // Handle route based on auth state
       const currentRoute = router.currentRoute.value;
       if (currentUser) {
-        // If user is logged in and on landing page, redirect to chats
+        // Create user document if it doesn't exist
+        await createUserIfNotExists(currentUser);
+
+        // Handle routing
         if (currentRoute.path === '/') {
           router.push('/chats');
         }
       } else {
-        // If user is not logged in and on protected route, redirect to landing
         if (currentRoute.meta.requiresAuth) {
           router.push('/');
         }

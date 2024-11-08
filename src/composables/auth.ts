@@ -2,11 +2,13 @@ import { getAuth, onAuthStateChanged, signOut, User } from 'firebase/auth';
 import { onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 
+// Move user ref outside the function to make it a singleton
+export const user = ref<User | null>(null);
+
 export function useAuth() {
   const auth = getAuth();
   const router = useRouter();
   const isLoggedIn = ref(false);
-  const user = ref<User | null>(null);
 
   const initAuth = () => {
     onAuthStateChanged(auth, (currentUser) => {

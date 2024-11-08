@@ -1,30 +1,25 @@
 <script setup lang="ts">
-import { doc, getDoc, onSnapshot } from 'firebase/firestore';
-import { onMounted, ref } from 'vue';
+import { doc, onSnapshot } from 'firebase/firestore';
+import { onMounted, ref, onUnmounted } from 'vue';
 import ChatListItem from './ChatListItem.vue';
-import { chatroomsCol, db } from 'src/boot/firebase';
+import { db } from 'src/boot/firebase';
 import { user } from 'src/composables/auth';
 
 const listLoading = ref(true);
 const userChatrooms = ref<Array<string>>([]);
+let unsubscribe: (() => void) | null = null;
 
-const fetchUserChatrooms = async () => {
-  const userDoc = await getDoc(doc(db, 'users', user.value?.uid || ''));
-  const userRooms = userDoc.data()?.rooms || [];
+const subscribeToUserRooms = async () => {
+  if (!user.value?.uid) return;
 
-  onSnapshot(
-    chatroomsCol,
-    (snapshot) => {
+  unsubscribe = onSnapshot(
+    doc(db, 'users', user.value.uid),
+    (userDoc) => {
       listLoading.value = false;
-      userChatrooms.value = [];
-      snapshot.forEach((doc) => {
-        if (userRooms.includes(doc.id)) {
-          userChatrooms.value.push(doc.id);
-        }
-      });
+      userChatrooms.value = userDoc.data()?.rooms || [];
     },
     (error) => {
-      console.error('Error with chatrooms subscription:', error);
+      console.error('Error with user rooms subscription:', error);
       listLoading.value = false;
       userChatrooms.value = [];
     }
@@ -32,7 +27,13 @@ const fetchUserChatrooms = async () => {
 };
 
 onMounted(async () => {
-  await fetchUserChatrooms();
+  await subscribeToUserRooms();
+});
+
+onUnmounted(() => {
+  if (unsubscribe) {
+    unsubscribe();
+  }
 });
 </script>
 
@@ -47,7 +48,7 @@ onMounted(async () => {
       </q-item>
     </div>
     <div v-else>
-      <q-item v-if="userChatrooms.length == 0">
+      <q-item v-if="userChatrooms.length === 0">
         <q-item-section>No chatrooms.</q-item-section>
       </q-item>
       <ChatListItem

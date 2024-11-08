@@ -9,7 +9,22 @@ const props = defineProps({
   id: String,
 });
 
-const { room, fetchRoomData } = useRoom();
+const { room, fetchRoomData, leaveRoom } = useRoom();
+
+const handleLeaveRoom = async (event: Event) => {
+  event.stopPropagation();
+  if (!props.id) return;
+
+  try {
+    await leaveRoom(props.id);
+    // Optionally navigate back to /chats if we're in the room being left
+    if (router.currentRoute.value.params.id === props.id) {
+      await router.push('/chats');
+    }
+  } catch (error) {
+    console.error('Failed to leave room:', error);
+  }
+};
 
 onMounted(async () => {
   await fetchRoomData(props.id as string);
@@ -31,9 +46,18 @@ onMounted(async () => {
       </div>
     </q-item-section>
     <q-item-section side>
-      <template v-if="room.users.length > 0">
-        <OverlappingAvatars :users="room.users" right />
-      </template>
+      <div class="row items-center q-gutter-sm">
+        <template v-if="room.users.length > 0">
+          <OverlappingAvatars :users="room.users" right />
+        </template>
+        <q-btn
+          icon="logout"
+          flat
+          round
+          @click="handleLeaveRoom"
+          color="negative"
+        />
+      </div>
     </q-item-section>
   </q-item>
 </template>

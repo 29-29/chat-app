@@ -5,6 +5,8 @@ import {
   where,
   documentId,
   getDocs,
+  updateDoc,
+  Timestamp,
 } from 'firebase/firestore';
 import { chatroomsCol, usersCol } from 'src/boot/firebase';
 import { reactive, ref } from 'vue';
@@ -15,6 +17,10 @@ export function useRoom() {
     loading: true,
     name: '',
     users: [],
+    latestMessage: {
+      text: '',
+      timestamp: Timestamp.now(),
+    },
   });
 
   const chatUsers = ref<Array<User>>([]);
@@ -25,6 +31,8 @@ export function useRoom() {
         const data = doc.data();
         room.name = data?.name;
         room.users = data?.users;
+        room.latestMessage.text = data?.latestMessageText;
+        room.latestMessage.timestamp = data?.latestMessageTimestamp;
 
         // Fetch users after we have the room data
         if (room.users.length > 0) {
@@ -49,9 +57,27 @@ export function useRoom() {
       });
   };
 
+  const updateLatestMessage = async (
+    roomID: string,
+    message: {
+      text: string;
+      timestamp: Timestamp;
+    }
+  ) => {
+    try {
+      await updateDoc(doc(chatroomsCol, roomID), {
+        latestMessageText: message.text,
+        latestMessageTimestamp: message.timestamp,
+      });
+    } catch (error) {
+      console.error('Failed to update latest message:', error);
+    }
+  };
+
   return {
     room,
     chatUsers,
     fetchRoomData,
+    updateLatestMessage,
   };
 }

@@ -5,6 +5,7 @@ export interface Chatroom {
   name: string;
   users: string[];
   latestMessageId: string;
+  private: boolean;
 }
 
 export interface Message {

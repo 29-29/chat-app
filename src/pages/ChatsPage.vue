@@ -7,6 +7,8 @@ import {
   query,
   getDocs,
   where,
+  serverTimestamp,
+  doc,
 } from 'firebase/firestore';
 import { db } from 'src/boot/firebase';
 import ChatList from 'src/components/ChatList.vue';
@@ -24,7 +26,6 @@ const router = useRouter();
 
 const handleJoinRoom = async (code: string) => {
   try {
-    // Query to find room with this code
     const roomQuery = query(
       collection(db, 'chatrooms'),
       where('code', '==', code)
@@ -33,7 +34,6 @@ const handleJoinRoom = async (code: string) => {
 
     if (!snapshot.empty) {
       const roomId = snapshot.docs[0].id;
-      // Navigate to the room
       await router.push(`/chat/${roomId}`);
     }
   } catch (error) {
@@ -44,7 +44,6 @@ const handleJoinRoom = async (code: string) => {
 const handleCreateRoomClick = (code: string) => {
   roomCode.value = code;
   joinRoomDialog.value = false;
-  // Use nextTick to ensure dialogs don't conflict
   nextTick(() => {
     createRoomDialog.value = true;
   });
@@ -58,20 +57,25 @@ const handleCreateRoom = async (
   if (!currentUser.value) return;
 
   try {
-    // Create room and join it
+    // Create room with initial data
     const roomRef = await addDoc(collection(db, 'chatrooms'), {
-      code: code,
+      code,
       name: roomName,
       private: isPrivate,
       users: [currentUser.value.uid],
+      createdAt: serverTimestamp(),
+      lastMessageTime: serverTimestamp(),
     });
 
-    // Join the room after creating it
-    await updateDoc(roomRef, {
-      users: arrayUnion(currentUser.value.uid),
+    // Update user's rooms array
+    await updateDoc(doc(db, 'users', currentUser.value.uid), {
+      rooms: arrayUnion(roomRef.id),
     });
 
     createRoomDialog.value = false;
+
+    // Navigate to the newly created room
+    await router.push(`/chat/${roomRef.id}`);
   } catch (error) {
     console.error('Failed to create room:', error);
   }
@@ -94,11 +98,13 @@ const handleCreateRoom = async (
       <ChatList />
     </Suspense>
   </div>
+
   <JoinRoomDialog
     v-model="joinRoomDialog"
     @joinRoom="handleJoinRoom"
     @createRoom="handleCreateRoomClick"
   />
+
   <CreateRoomDialog
     v-model="createRoomDialog"
     :room-code="roomCode"

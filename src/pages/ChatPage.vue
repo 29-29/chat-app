@@ -7,6 +7,8 @@ import {
   documentId,
   addDoc,
   serverTimestamp,
+  Timestamp,
+  orderBy,
 } from 'firebase/firestore';
 import { messagesCol, usersCol } from 'src/boot/firebase';
 import ChatMessage from 'src/components/ChatMessage.vue';
@@ -23,7 +25,7 @@ interface ChatMessage {
 
 const route = useRoute();
 const roomID = <string>route.params?.id;
-const { room, fetchRoomData } = useRoom();
+const { room, fetchRoomData, updateLatestMessage } = useRoom();
 const { currentUser } = useCurrentUser();
 
 // Users state
@@ -60,7 +62,8 @@ const messages = computed(() =>
 
 const fetchMessages = async () => {
   try {
-    const querySnapshot = await getDocs(messagesCol(roomID));
+    const q = query(messagesCol(roomID), orderBy('timestamp', 'desc'));
+    const querySnapshot = await getDocs(q);
     messagesRaw.value = querySnapshot.docs.map((doc) => ({
       id: doc.id,
       data: doc.data(),
@@ -76,14 +79,22 @@ const sendMessage = async () => {
   if (!newMessage.value.trim()) return;
 
   try {
+    const timestamp = serverTimestamp() as Timestamp;
+
+    // Send the message
     await addDoc(messagesCol(roomID), {
       message: newMessage.value,
       author: currentUser.value?.uid,
-      timestamp: serverTimestamp(),
+      timestamp,
+    });
+
+    // Update room's latest message
+    await updateLatestMessage(roomID, {
+      text: newMessage.value,
+      timestamp,
     });
 
     newMessage.value = '';
-
     await fetchMessages();
   } catch (error) {
     console.error('Failed to send message:', error);

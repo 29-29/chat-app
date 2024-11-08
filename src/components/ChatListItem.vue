@@ -16,6 +16,7 @@ const loading = ref(true);
 const roomData = ref<{
   name: string;
   users: string[];
+  private: boolean;
   latestMessage?: {
     text: string;
     timestamp: Timestamp;
@@ -33,6 +34,7 @@ const subscribeToRoom = (roomId: string) => {
         roomData.value = {
           name: data.name,
           users: data.users || [],
+          private: data.private ?? true,
           latestMessage:
             data.latestMessageText && data.latestMessageTimestamp
               ? {
@@ -41,7 +43,6 @@ const subscribeToRoom = (roomId: string) => {
                 }
               : undefined,
         };
-        console.log('Room data:', data);
       }
       loading.value = false;
     },
@@ -94,7 +95,17 @@ onUnmounted(() => {
         <q-skeleton type="text" width="50px" />
       </div>
       <div v-else>
-        <div class="text-weight-bold">{{ roomData?.name }}</div>
+        <div class="row items-center q-gutter-sm">
+          <div class="text-weight-bold">{{ roomData?.name }}</div>
+          <q-chip
+            v-if="roomData && !roomData.private"
+            dense
+            size="sm"
+            color="pink-5"
+            text-color="white"
+            label="Public"
+          />
+        </div>
         <div class="text-caption text-grey">
           <template v-if="roomData?.latestMessage">
             {{ roomData.latestMessage.text }} ·

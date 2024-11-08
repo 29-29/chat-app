@@ -11,6 +11,7 @@ export function useAuth() {
   const auth = getAuth();
   const router = useRouter();
   const isLoggedIn = ref(false);
+  const authInitialized = ref(false);
 
   const createUserIfNotExists = async (currentUser: User) => {
     const userRef = doc(db, 'users', currentUser.uid);
@@ -29,7 +30,7 @@ export function useAuth() {
     onAuthStateChanged(auth, async (currentUser) => {
       user.value = currentUser;
       isLoggedIn.value = !!currentUser;
-
+      authInitialized.value = true;
       const currentRoute = router.currentRoute.value;
       if (currentUser) {
         // Create user document if it doesn't exist
@@ -58,6 +59,7 @@ export function useAuth() {
 
   return {
     isLoggedIn,
+    authInitialized,
     user,
     handleSignOut,
   };

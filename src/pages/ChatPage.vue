@@ -30,6 +30,8 @@ const { currentUser } = useCurrentUser();
 
 // Users state
 const chatUsers = ref<Array<User>>([]);
+const messagesRaw = ref<Array<ChatMessage>>([]);
+const loading = ref(true);
 
 const fetchUsers = async () => {
   if (room.users.length > 0) {
@@ -45,7 +47,6 @@ const fetchUsers = async () => {
 };
 
 // Messages state
-const messagesRaw = ref<Array<ChatMessage>>([]);
 const messages = computed(() =>
   messagesRaw.value.map((msg) => {
     const data = msg.data;
@@ -70,6 +71,8 @@ const fetchMessages = async () => {
     }));
   } catch (error) {
     console.error('Failed to fetch messages', error);
+  } finally {
+    loading.value = false;
   }
 };
 
@@ -109,7 +112,7 @@ onMounted(async () => {
 
 <template>
   <div class="q-pa-md">
-    <div v-if="room.loading" class="q-pa-md">
+    <div v-if="room.loading || loading" class="q-pa-md">
       <q-skeleton type="text" class="q-mb-sm" />
       <q-skeleton type="text" class="q-mb-sm" />
       <q-skeleton type="text" />
@@ -136,11 +139,20 @@ onMounted(async () => {
           </template>
         </q-input>
       </q-form>
-      <ChatMessage
-        v-for="message in messages"
-        :key="message.id"
-        :data="message.data"
-      />
+
+      <div v-if="messages.length === 0" class="text-center q-pa-md text-grey">
+        <q-icon name="chat" size="48px" color="grey-4" />
+        <div class="text-h6 q-mt-sm">No messages yet</div>
+        <div class="text-caption">Be the first to start the conversation!</div>
+      </div>
+
+      <template v-else>
+        <ChatMessage
+          v-for="message in messages"
+          :key="message.id"
+          :data="message.data"
+        />
+      </template>
     </div>
   </div>
 </template>

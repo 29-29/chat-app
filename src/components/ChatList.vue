@@ -1,28 +1,21 @@
 <script setup lang="ts">
-// import { getAuth } from 'firebase/auth';
-import {
-  getFirestore,
-  collection,
-  getDocs,
-  DocumentData,
-} from 'firebase/firestore';
-import { firebaseApp } from 'src/boot/firebase';
+//// import { getAuth } from 'firebase/auth';
+import { getDocs } from 'firebase/firestore';
 import { onMounted, ref } from 'vue';
-import { useRouter } from 'vue-router';
-
-const router = useRouter();
-
-const firestore = getFirestore(firebaseApp);
+//// import { useRouter } from 'vue-router';
+import ChatListItem from './ChatListItem.vue';
+import { chatroomsCol } from 'src/boot/firebase';
+//// const router = useRouter();
 
 const listLoading = ref(true);
-const userChatrooms = ref<Array<{ id: string; data: DocumentData }>>([]);
+const userChatrooms = ref<Array<string>>([]);
 
 const fetchUserChatrooms = async () => {
-  getDocs(collection(firestore, 'chatrooms'))
+  getDocs(chatroomsCol)
     .then((result) => {
       listLoading.value = false;
       result.forEach((doc) => {
-        userChatrooms.value.push({ id: doc.id, data: doc.data() });
+        userChatrooms.value.push(doc.id);
       });
     })
     .catch((error) => {
@@ -50,17 +43,12 @@ onMounted(async () => {
       <q-item v-if="userChatrooms.length == 0">
         <q-item-section>No chatrooms.</q-item-section>
       </q-item>
-
-      <q-item
+      <ChatListItem
         v-else
-        v-for="room in userChatrooms"
-        clickable
-        v-ripple
-        @click="router.push(`/chat/${room.id}`)"
-        :key="room.id"
-      >
-        <q-item-section>{{ room.data.name }}</q-item-section>
-      </q-item>
+        v-for="chatroom in userChatrooms"
+        :key="chatroom"
+        :id="chatroom"
+      />
     </div>
   </q-list>
 </template>

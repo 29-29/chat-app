@@ -9,7 +9,9 @@ const signInWithGoogle = () => {
   signInWithPopup(getAuth(), provider)
     .then((result) => {
       console.log('successfully signed in!', result);
-      router.push('/chats');
+      router.push('/chats').catch((error) => {
+        console.error('failed to push route', error);
+      });
     })
     .catch((error) => {
       console.error('failed to sign in!', error);

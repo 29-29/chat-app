@@ -1,6 +1,6 @@
-export interface Todo {
-  id: number;
-  content: string;
+export interface Chatroom {
+  code: string;
+  name: string;
 }
 
 export interface Meta {

@@ -1,27 +1,28 @@
 <script setup lang="ts">
-//// import { getAuth } from 'firebase/auth';
-import { getDocs } from 'firebase/firestore';
+import { onSnapshot } from 'firebase/firestore';
 import { onMounted, ref } from 'vue';
-//// import { useRouter } from 'vue-router';
 import ChatListItem from './ChatListItem.vue';
 import { chatroomsCol } from 'src/boot/firebase';
-//// const router = useRouter();
 
 const listLoading = ref(true);
 const userChatrooms = ref<Array<string>>([]);
 
 const fetchUserChatrooms = async () => {
-  getDocs(chatroomsCol)
-    .then((result) => {
+  onSnapshot(
+    chatroomsCol,
+    (snapshot) => {
       listLoading.value = false;
-      result.forEach((doc) => {
+      userChatrooms.value = [];
+      snapshot.forEach((doc) => {
         userChatrooms.value.push(doc.id);
       });
-    })
-    .catch((error) => {
+    },
+    (error) => {
+      console.error('Error with chatrooms subscription:', error);
       listLoading.value = false;
-      console.error('Failed fetching chatrooms', error);
-    });
+      userChatrooms.value = [];
+    }
+  );
 };
 
 onMounted(async () => {

@@ -21,6 +21,7 @@ onMounted(async () => {
     <q-item-section>
       <div v-if="room.loading">
         <q-skeleton type="text" width="100px" />
+        <q-skeleton type="text" width="50px" />
       </div>
       <div v-else>
         <div class="text-weight-bold">{{ room.name }}</div>

@@ -5,6 +5,8 @@ import {
   query,
   where,
   documentId,
+  addDoc,
+  serverTimestamp,
 } from 'firebase/firestore';
 import { messagesCol, usersCol } from 'src/boot/firebase';
 import ChatMessage from 'src/components/ChatMessage.vue';
@@ -12,6 +14,7 @@ import { User } from 'src/components/models';
 import { computed, onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import { useRoom } from 'src/composables/room';
+import { useCurrentUser } from 'src/composables/currentUser';
 
 interface ChatMessage {
   id: string;
@@ -21,6 +24,7 @@ interface ChatMessage {
 const route = useRoute();
 const roomID = <string>route.params?.id;
 const { room, fetchRoomData } = useRoom();
+const { currentUser } = useCurrentUser();
 
 // Users state
 const chatUsers = ref<Array<User>>([]);
@@ -66,6 +70,26 @@ const fetchMessages = async () => {
   }
 };
 
+const newMessage = ref('');
+
+const sendMessage = async () => {
+  if (!newMessage.value.trim()) return;
+
+  try {
+    await addDoc(messagesCol(roomID), {
+      message: newMessage.value,
+      author: currentUser.value?.uid,
+      timestamp: serverTimestamp(),
+    });
+
+    newMessage.value = '';
+
+    await fetchMessages();
+  } catch (error) {
+    console.error('Failed to send message:', error);
+  }
+};
+
 onMounted(async () => {
   await fetchRoomData(roomID);
   await Promise.all([fetchMessages(), fetchUsers()]);
@@ -80,6 +104,27 @@ onMounted(async () => {
       <q-skeleton type="text" />
     </div>
     <div v-else>
+      <q-form class="q-mt-md" @submit.prevent>
+        <q-input
+          v-model="newMessage"
+          label="Type a message"
+          dense
+          outlined
+          class="q-mb-md"
+        >
+          <template v-slot:after>
+            <q-btn
+              round
+              dense
+              flat
+              icon="send"
+              color="pink-5"
+              type="submit"
+              @click="sendMessage"
+            />
+          </template>
+        </q-input>
+      </q-form>
       <ChatMessage
         v-for="message in messages"
         :key="message.id"

@@ -1,9 +1,8 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
-import { doc, getDoc } from 'firebase/firestore';
-import { db } from 'src/boot/firebase';
+import { onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useRoom } from 'src/composables/room';
+import OverlappingAvatars from 'src/components/OverlappingAvatars.vue';
 
 const router = useRouter();
 const props = defineProps({
@@ -11,28 +10,9 @@ const props = defineProps({
 });
 
 const { room, fetchRoomData } = useRoom();
-const userPhotos = ref<Array<{ id: string; url: string }>>([]);
-
-const fetchUserPhotos = async () => {
-  try {
-    const userDocs = await Promise.all(
-      room.users.map((userId) => getDoc(doc(db, 'users', userId)))
-    );
-
-    userPhotos.value = userDocs
-      .filter((doc) => doc.exists())
-      .map((doc) => ({
-        id: doc.id,
-        url: doc.data().photoURL || '',
-      }));
-  } catch (error) {
-    console.error('Failed to get user photos', error);
-  }
-};
 
 onMounted(async () => {
   await fetchRoomData(props.id as string);
-  await fetchUserPhotos();
 });
 </script>
 
@@ -50,22 +30,9 @@ onMounted(async () => {
       </div>
     </q-item-section>
     <q-item-section side>
-      <q-avatar class="overlapping" size="sm">
-        <img
-          v-for="(user, index) in userPhotos.slice(0, 3)"
-          :src="user.url"
-          :key="user.id"
-          :style="{
-            position: 'absolute',
-            right: `${index * 20}px`,
-            zIndex: userPhotos.length - index,
-            width: '32px',
-            height: '32px',
-            borderRadius: '50%',
-            border: '2px solid white',
-          }"
-        />
-      </q-avatar>
+      <template v-if="room.users.length > 0">
+        <OverlappingAvatars :users="room.users" right />
+      </template>
     </q-item-section>
   </q-item>
 </template>

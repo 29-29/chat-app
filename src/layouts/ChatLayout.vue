@@ -3,6 +3,7 @@ import { onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useAuth } from 'src/composables/auth';
 import { useRoom } from 'src/composables/room';
+import OverlappingAvatars from 'src/components/OverlappingAvatars.vue';
 
 const router = useRouter();
 const route = useRoute();
@@ -25,8 +26,9 @@ onMounted(async () => {
           <div v-if="room.loading">
             <q-skeleton type="rect" width="100px" />
           </div>
-          <div v-else>
-            {{ room.name }}
+          <div v-else class="flex items-center q-gutter-sm">
+            <span class="text-weight-bold">{{ room.name }}</span>
+            <OverlappingAvatars :users="room.users" />
           </div>
         </q-toolbar-title>
 

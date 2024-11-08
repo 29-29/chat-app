@@ -1,62 +1,98 @@
 <script setup lang="ts">
-import { doc, onSnapshot } from 'firebase/firestore';
-import { onMounted, ref, onUnmounted } from 'vue';
+import { doc, onSnapshot, getDoc, query, where } from 'firebase/firestore';
+import { onMounted, ref, onUnmounted, computed } from 'vue';
 import ChatListItem from './ChatListItem.vue';
-import { db } from 'src/boot/firebase';
+import { db, chatroomsCol } from 'src/boot/firebase';
 import { user } from 'src/composables/auth';
 
 const listLoading = ref(true);
-const userChatrooms = ref<Array<string>>([]);
-let unsubscribe: (() => void) | null = null;
+const userChatrooms = ref<Array<{ id: string; lastMessageTime: number }>>([]);
+const publicRooms = ref<Array<{ id: string; lastMessageTime: number }>>([]);
+let unsubscribeUser: (() => void) | null = null;
+let unsubscribePublic: (() => void) | null = null;
 
 const subscribeToUserRooms = async () => {
   if (!user.value?.uid) return;
 
-  unsubscribe = onSnapshot(
+  unsubscribeUser = onSnapshot(
     doc(db, 'users', user.value.uid),
-    (userDoc) => {
+    async (userDoc) => {
+      const roomIds = userDoc.data()?.rooms || [];
+
+      const roomsWithTimestamp = await Promise.all(
+        roomIds.map(async (roomId: string) => {
+          const roomDoc = await getDoc(doc(chatroomsCol, roomId));
+          const roomData = roomDoc.data();
+          return {
+            id: roomId,
+            lastMessageTime: roomData?.lastMessageTime?.toMillis() || 0,
+          };
+        })
+      );
+
+      userChatrooms.value = roomsWithTimestamp;
       listLoading.value = false;
-      userChatrooms.value = userDoc.data()?.rooms || [];
-    },
-    (error) => {
-      console.error('Error with user rooms subscription:', error);
-      listLoading.value = false;
-      userChatrooms.value = [];
     }
   );
 };
 
+const subscribeToPublicRooms = () => {
+  const publicRoomsQuery = query(chatroomsCol, where('private', '==', false));
+
+  unsubscribePublic = onSnapshot(publicRoomsQuery, async (snapshot) => {
+    const publicRoomsData = snapshot.docs.map((doc) => ({
+      id: doc.id,
+      lastMessageTime: doc.data().lastMessageTime?.toMillis() || 0,
+    }));
+    publicRooms.value = publicRoomsData;
+  });
+};
+
+// Combine and sort all rooms
+const allRooms = computed(() => {
+  const userRoomIds = new Set(userChatrooms.value.map((room) => room.id));
+
+  // Filter out public rooms that user is already a member of
+  const uniquePublicRooms = publicRooms.value.filter(
+    (room) => !userRoomIds.has(room.id)
+  );
+
+  return [...userChatrooms.value, ...uniquePublicRooms].sort(
+    (a, b) => b.lastMessageTime - a.lastMessageTime
+  );
+});
+
 onMounted(async () => {
   await subscribeToUserRooms();
+  subscribeToPublicRooms();
 });
 
 onUnmounted(() => {
-  if (unsubscribe) {
-    unsubscribe();
-  }
+  unsubscribeUser?.();
+  unsubscribePublic?.();
 });
 </script>
 
 <template>
   <q-list bordered separator>
-    <div v-if="listLoading">
+    <template v-if="listLoading">
       <q-item>
         <div class="col">
           <q-skeleton type="rect" width="250px" />
           <q-skeleton type="text" width="200px" />
         </div>
       </q-item>
-    </div>
-    <div v-else>
-      <q-item v-if="userChatrooms.length === 0">
-        <q-item-section>No chatrooms.</q-item-section>
+    </template>
+    <template v-else>
+      <q-item v-if="allRooms.length === 0">
+        <q-item-section>No chatrooms available.</q-item-section>
       </q-item>
       <ChatListItem
         v-else
-        v-for="chatroom in userChatrooms"
-        :key="chatroom"
-        :id="chatroom"
+        v-for="room in allRooms"
+        :key="room.id"
+        :id="room.id"
       />
-    </div>
+    </template>
   </q-list>
 </template>

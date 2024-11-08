@@ -1,19 +1,39 @@
 <script setup lang="ts">
-import { onMounted } from 'vue';
+import { onMounted, onUnmounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useAuth } from 'src/composables/auth';
 import { useRoom } from 'src/composables/room';
 import OverlappingAvatars from 'src/components/OverlappingAvatars.vue';
+import { doc, onSnapshot } from 'firebase/firestore';
+import { chatroomsCol } from 'src/boot/firebase';
 
 const router = useRouter();
 const route = useRoute();
 const { isLoggedIn, handleSignOut } = useAuth();
 const { room, fetchRoomData, joinRoom } = useRoom();
 
+let unsubscribe: (() => void) | null = null;
+
+const subscribeToRoomChanges = (roomId: string) => {
+  unsubscribe = onSnapshot(doc(chatroomsCol, roomId), (snapshot) => {
+    if (snapshot.exists()) {
+      const data = snapshot.data();
+      room.users = data.users || [];
+    }
+  });
+};
+
 onMounted(async () => {
   const roomId = route.params.id as string;
   await fetchRoomData(roomId);
   await joinRoom(roomId);
+  subscribeToRoomChanges(roomId);
+});
+
+onUnmounted(() => {
+  if (unsubscribe) {
+    unsubscribe();
+  }
 });
 </script>
 

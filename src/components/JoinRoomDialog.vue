@@ -1,30 +1,52 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
-import { collection, getDocs } from 'firebase/firestore';
+import { ref, watch } from 'vue';
+import { collection, getDocs, query, where } from 'firebase/firestore';
 import { db } from 'src/boot/firebase';
-import { defineEmits } from 'vue';
 
 const emits = defineEmits(['createRoom', 'joinRoom']);
 const showDialog = ref(false);
 const roomCode = ref('');
-const roomCodes = ref<string[]>([]);
+const roomExists = ref(false);
+const isChecking = ref(false);
 
-const fetchRoomCodes = async () => {
-  const querySnapshot = await getDocs(collection(db, 'chatrooms'));
-  roomCodes.value = querySnapshot.docs.map((doc) => doc.data().roomCode);
+const checkRoomExists = async (code: string) => {
+  if (!code) {
+    roomExists.value = false;
+    return;
+  }
+
+  isChecking.value = true;
+  try {
+    const roomQuery = query(
+      collection(db, 'chatrooms'),
+      where('code', '==', code)
+    );
+    const snapshot = await getDocs(roomQuery);
+    roomExists.value = !snapshot.empty;
+  } catch (error) {
+    console.error('Failed to check room:', error);
+    roomExists.value = false;
+  } finally {
+    isChecking.value = false;
+  }
 };
 
+// Debounce the room check to avoid too many queries
+let timeout: NodeJS.Timeout;
+
 const handleJoinRoom = () => {
-  if (!roomCodes.value.includes(roomCode.value)) {
+  if (!roomExists.value) {
     emits('createRoom', roomCode.value);
   } else {
     emits('joinRoom', roomCode.value);
   }
 };
 
-onMounted(() => {
-  fetchRoomCodes();
-  roomCode.value = '';
+watch(roomCode, (newCode) => {
+  clearTimeout(timeout);
+  timeout = setTimeout(() => {
+    checkRoomExists(newCode);
+  }, 500);
 });
 </script>
 
@@ -38,18 +60,14 @@ onMounted(() => {
           label="Room Code"
           outlined
           stack-label
-          :hint="
-            !roomCodes.includes(roomCode) && roomCode
-              ? 'Room does not exist'
-              : ''
-          "
+          :hint="!roomExists && roomCode ? 'Room does not exist' : ''"
         />
       </q-card-section>
       <q-card-actions align="right">
         <q-btn flat label="Cancel" v-close-popup />
         <q-btn
           flat
-          :label="!roomCodes.includes(roomCode) ? 'CREATE ROOM' : 'JOIN'"
+          :label="!roomExists ? 'CREATE ROOM' : 'JOIN'"
           v-close-popup
           @click="handleJoinRoom"
         />

@@ -1,19 +1,44 @@
 <script setup lang="ts">
-import { addDoc, arrayUnion, collection, updateDoc } from 'firebase/firestore';
+import {
+  addDoc,
+  arrayUnion,
+  collection,
+  updateDoc,
+  query,
+  getDocs,
+  where,
+} from 'firebase/firestore';
 import { db } from 'src/boot/firebase';
 import ChatList from 'src/components/ChatList.vue';
 import JoinRoomDialog from 'src/components/JoinRoomDialog.vue';
 import CreateRoomDialog from 'src/components/CreateRoomDialog.vue';
 import { ref, nextTick } from 'vue';
 import { useCurrentUser } from 'src/composables/currentUser';
+import { useRouter } from 'vue-router';
 
 const { currentUser } = useCurrentUser();
 const joinRoomDialog = ref(false);
 const createRoomDialog = ref(false);
 const roomCode = ref('');
+const router = useRouter();
 
-const handleJoinRoom = (code: string) => {
-  console.log('join room', code);
+const handleJoinRoom = async (code: string) => {
+  try {
+    // Query to find room with this code
+    const roomQuery = query(
+      collection(db, 'chatrooms'),
+      where('code', '==', code)
+    );
+    const snapshot = await getDocs(roomQuery);
+
+    if (!snapshot.empty) {
+      const roomId = snapshot.docs[0].id;
+      // Navigate to the room
+      await router.push(`/chat/${roomId}`);
+    }
+  } catch (error) {
+    console.error('Failed to join room:', error);
+  }
 };
 
 const handleCreateRoomClick = (code: string) => {

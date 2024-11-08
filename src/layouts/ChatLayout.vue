@@ -7,10 +7,12 @@ import { useRoom } from 'src/composables/room';
 const router = useRouter();
 const route = useRoute();
 const { isLoggedIn, handleSignOut } = useAuth();
-const { room, fetchRoomData } = useRoom();
+const { room, fetchRoomData, joinRoom } = useRoom();
 
-onMounted(() => {
-  fetchRoomData(route.params.id as string);
+onMounted(async () => {
+  const roomId = route.params.id as string;
+  await fetchRoomData(roomId);
+  await joinRoom(roomId);
 });
 </script>
 

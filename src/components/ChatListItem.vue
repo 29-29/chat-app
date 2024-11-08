@@ -51,7 +51,20 @@ onMounted(async () => {
     </q-item-section>
     <q-item-section side>
       <q-avatar class="overlapping" size="sm">
-        <img v-for="user in userPhotos" :src="user.url" :key="user.id" />
+        <img
+          v-for="(user, index) in userPhotos.slice(0, 3)"
+          :src="user.url"
+          :key="user.id"
+          :style="{
+            position: 'absolute',
+            right: `${index * 20}px`,
+            zIndex: userPhotos.length - index,
+            width: '32px',
+            height: '32px',
+            borderRadius: '50%',
+            border: '2px solid white',
+          }"
+        />
       </q-avatar>
     </q-item-section>
   </q-item>

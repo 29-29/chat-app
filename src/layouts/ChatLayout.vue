@@ -1,52 +1,17 @@
 <script setup lang="ts">
-import { Auth, getAuth, onAuthStateChanged, signOut } from 'firebase/auth';
-import { doc, getDoc, getFirestore } from 'firebase/firestore';
-import { firebaseApp } from 'src/boot/firebase';
-import { onMounted, reactive, ref } from 'vue';
+import { onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import { useAuth } from 'src/composables/auth';
+import { useRoom } from 'src/composables/room';
 
 const router = useRouter();
 const route = useRoute();
-
-const isLoggedIn = ref(false);
-const room = reactive({
-  loading: true,
-  name: '',
-});
-
-let auth: Auth;
+const { isLoggedIn, handleSignOut } = useAuth();
+const { room, fetchRoomData } = useRoom();
 
 onMounted(() => {
-  auth = getAuth();
-  onAuthStateChanged(auth, (user) => {
-    if (user) {
-      isLoggedIn.value = true;
-    } else {
-      isLoggedIn.value = false;
-    }
-  });
-  fetchRoomData();
-  console.log(auth.currentUser);
+  fetchRoomData(route.params.id as string);
 });
-
-const handleSignOut = () => {
-  signOut(auth).then(() => {
-    router.push('/');
-  });
-};
-
-const fetchRoomData = async () => {
-  const firestore = getFirestore(firebaseApp);
-  const roomDocRef = doc(firestore, `chatrooms/${route.params.id}`);
-  await getDoc(roomDocRef)
-    .then((result) => {
-      room.name = result.data()?.name;
-      room.loading = false;
-    })
-    .catch((error) => {
-      console.error('Room not found', error);
-    });
-};
 </script>
 
 <template>

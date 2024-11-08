@@ -1,40 +1,17 @@
 <script setup lang="ts">
-import { Auth, getAuth, onAuthStateChanged, signOut } from 'firebase/auth';
-import { onMounted, reactive, ref } from 'vue';
-import { useRouter } from 'vue-router';
+import { computed } from 'vue';
+import { useAuth } from 'src/composables/auth';
 
-const router = useRouter();
-const isLoggedIn = ref(false);
-let auth: Auth;
-const userData = reactive({
-  name: '',
-  photoURL: '',
-});
-const userLoading = ref(true);
+const { isLoggedIn, user, handleSignOut } = useAuth();
 
-const fetchUserData = async () => {
-  userData.name = <string>auth.currentUser?.displayName;
-  userData.photoURL = <string>auth.currentUser?.photoURL;
-  userLoading.value = false;
-};
+// Use computed properties instead of manual syncing
+const userData = computed(() => ({
+  name: user.value?.displayName || '',
+  photoURL: user.value?.photoURL || '',
+}));
 
-onMounted(() => {
-  auth = getAuth();
-  onAuthStateChanged(auth, (user) => {
-    if (user) {
-      isLoggedIn.value = true;
-      fetchUserData();
-    } else {
-      isLoggedIn.value = false;
-    }
-  });
-});
-
-const handleSignOut = () => {
-  signOut(auth).then(() => {
-    router.push('/');
-  });
-};
+// Loading state based on user availability
+const userLoading = computed(() => !user.value);
 </script>
 
 <template>
@@ -42,24 +19,25 @@ const handleSignOut = () => {
     <q-header>
       <q-toolbar class="bg-pink-5">
         <q-toolbar-title>Ahmad Chat App</q-toolbar-title>
-        <div v-if="userLoading" class="q-px-md row q-gutter-sm">
-          <q-skeleton type="QAvatar" size="sm" />
-        </div>
-        <div v-else class="q-mx-sm row q-gutter-sm items-center">
-          <div>{{ userData.name }}</div>
-          <q-avatar size="md">
-            <img :src="userData.photoURL" />
-          </q-avatar>
-        </div>
-        <div>
-          <q-btn
-            label="sign out"
-            color="white"
-            text-color="negative"
-            v-if="isLoggedIn"
-            @click="handleSignOut"
-          />
-        </div>
+        <template v-if="isLoggedIn">
+          <div v-if="userLoading" class="q-px-md row q-gutter-sm">
+            <q-skeleton type="QAvatar" size="sm" />
+          </div>
+          <div v-else class="q-mx-sm row q-gutter-sm items-center">
+            <div>{{ userData.name }}</div>
+            <q-avatar size="md">
+              <img :src="userData.photoURL" />
+            </q-avatar>
+          </div>
+          <div>
+            <q-btn
+              label="sign out"
+              color="white"
+              text-color="negative"
+              @click="handleSignOut"
+            />
+          </div>
+        </template>
       </q-toolbar>
     </q-header>
 

@@ -42,12 +42,12 @@ const handleSignOut = () => {
     <q-header>
       <q-toolbar class="bg-pink-5">
         <q-toolbar-title>Ahmad Chat App</q-toolbar-title>
-        <div v-if="userLoading" class="q-px-md">
-          <q-skeleton type="rect" height="30px" width="150px" />
+        <div v-if="userLoading" class="q-px-md row q-gutter-sm">
+          <q-skeleton type="QAvatar" size="sm" />
         </div>
-        <div v-else class="q-mx-sm">
-          {{ userData.name }}
-          <q-avatar size="md" class="q-mx-sm">
+        <div v-else class="q-mx-sm row q-gutter-sm items-center">
+          <div>{{ userData.name }}</div>
+          <q-avatar size="md">
             <img :src="userData.photoURL" />
           </q-avatar>
         </div>

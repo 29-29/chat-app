@@ -26,6 +26,7 @@ onMounted(() => {
     }
   });
   fetchRoomData();
+  console.log(auth.currentUser);
 });
 
 const handleSignOut = () => {
@@ -45,11 +46,6 @@ const fetchRoomData = async () => {
     .catch((error) => {
       console.error('Room not found', error);
     });
-  // if (roomDocSnap.exists()) {
-  //   room.name = roomDocSnap.data().name;
-  // } else {
-  //   console.error('Room not found');
-  // }
 };
 </script>
 

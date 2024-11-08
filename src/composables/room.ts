@@ -26,6 +26,31 @@ export function useRoom() {
   });
 
   const chatUsers = ref<Array<User>>([]);
+  const { currentUser } = useCurrentUser();
+
+  const leaveRoom = async (roomID: string) => {
+    if (!currentUser.value) return;
+
+    try {
+      // Remove user from room's users array
+      const roomRef = doc(chatroomsCol, roomID);
+      const roomDoc = await getDoc(roomRef);
+      const users = roomDoc.data()?.users || [];
+      await updateDoc(roomRef, {
+        users: users.filter((uid: string) => uid !== currentUser.value?.uid),
+      });
+
+      // Remove room from user's rooms array
+      const userRef = doc(usersCol, currentUser.value.uid);
+      const userDoc = await getDoc(userRef);
+      const rooms = userDoc.data()?.rooms || [];
+      await updateDoc(userRef, {
+        rooms: rooms.filter((id: string) => id !== roomID),
+      });
+    } catch (error) {
+      console.error('Failed to leave room:', error);
+    }
+  };
 
   const fetchRoomData = async (roomID: string) => {
     await getDoc(doc(chatroomsCol, roomID))
@@ -113,5 +138,6 @@ export function useRoom() {
     fetchRoomData,
     updateLatestMessage,
     joinRoom,
+    leaveRoom,
   };
 }

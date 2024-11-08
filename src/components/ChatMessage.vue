@@ -30,7 +30,22 @@ const author = computed(() => props.data.author.displayName);
     </q-avatar>
     <div class="column">
       <span class="text-caption">{{ author }}</span>
-      <span class="text-body1">{{ message }}</span>
+      <span class="text-body1">
+        {{ message }}
+        <q-chip dense size="sm" class="q-ml-sm text-grey-7 self-center">
+          {{
+            props.data.timestamp?.toDate().toLocaleDateString() ===
+            new Date().toLocaleDateString()
+              ? props.data.timestamp?.toDate().toLocaleTimeString([], {
+                  hour: '2-digit',
+                  minute: '2-digit',
+                })
+              : props.data.timestamp
+                  ?.toDate()
+                  .toLocaleString([], { hour: '2-digit', minute: '2-digit' })
+          }}
+        </q-chip>
+      </span>
     </div>
   </div>
 </template>

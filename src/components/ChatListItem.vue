@@ -42,7 +42,12 @@ onMounted(async () => {
       <div v-if="room.loading">
         <q-skeleton type="text" width="100px" />
       </div>
-      <div v-else>{{ room.name }}</div>
+      <div v-else>
+        <div class="text-weight-bold">{{ room.name }}</div>
+        <div class="text-caption text-grey">
+          {{ room.latestMessage?.text || 'No messages yet' }}
+        </div>
+      </div>
     </q-item-section>
     <q-item-section side>
       <q-avatar class="overlapping" size="sm">

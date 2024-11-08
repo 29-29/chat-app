@@ -7,10 +7,12 @@ import {
   getDocs,
   updateDoc,
   Timestamp,
+  arrayUnion,
 } from 'firebase/firestore';
 import { chatroomsCol, usersCol } from 'src/boot/firebase';
 import { reactive, ref } from 'vue';
 import { User } from 'src/components/models';
+import { useCurrentUser } from './currentUser';
 
 export function useRoom() {
   const room = reactive({
@@ -74,10 +76,42 @@ export function useRoom() {
     }
   };
 
+  const joinRoom = async (roomID: string) => {
+    const { currentUser } = useCurrentUser();
+    if (!currentUser.value) return;
+
+    try {
+      const roomRef = doc(chatroomsCol, roomID);
+      const userRef = doc(usersCol, currentUser.value.uid);
+
+      const roomDoc = await getDoc(roomRef);
+      if (!roomDoc.exists()) return;
+
+      const roomData = roomDoc.data();
+      if (!roomData.users.includes(currentUser.value.uid)) {
+        // Add user to room's users array
+        await updateDoc(roomRef, {
+          users: arrayUnion(currentUser.value.uid),
+        });
+
+        // Add room to user's rooms array
+        await updateDoc(userRef, {
+          rooms: arrayUnion(roomID),
+        });
+
+        // Refresh room data
+        await fetchRoomData(roomID);
+      }
+    } catch (error) {
+      console.error('Failed to join room:', error);
+    }
+  };
+
   return {
     room,
     chatUsers,
     fetchRoomData,
     updateLatestMessage,
+    joinRoom,
   };
 }

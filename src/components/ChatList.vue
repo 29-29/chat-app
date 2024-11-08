@@ -1,20 +1,26 @@
 <script setup lang="ts">
-import { onSnapshot } from 'firebase/firestore';
+import { doc, getDoc, onSnapshot } from 'firebase/firestore';
 import { onMounted, ref } from 'vue';
 import ChatListItem from './ChatListItem.vue';
-import { chatroomsCol } from 'src/boot/firebase';
+import { chatroomsCol, db } from 'src/boot/firebase';
+import { user } from 'src/composables/auth';
 
 const listLoading = ref(true);
 const userChatrooms = ref<Array<string>>([]);
 
 const fetchUserChatrooms = async () => {
+  const userDoc = await getDoc(doc(db, 'users', user.value?.uid || ''));
+  const userRooms = userDoc.data()?.rooms || [];
+
   onSnapshot(
     chatroomsCol,
     (snapshot) => {
       listLoading.value = false;
       userChatrooms.value = [];
       snapshot.forEach((doc) => {
-        userChatrooms.value.push(doc.id);
+        if (userRooms.includes(doc.id)) {
+          userChatrooms.value.push(doc.id);
+        }
       });
     },
     (error) => {

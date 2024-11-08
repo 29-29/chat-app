@@ -8,6 +8,7 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/chats',
     component: () => import('src/layouts/MainLayout.vue'),
+    meta: { requiresAuth: true },
     children: [
       {
         path: '',
@@ -18,6 +19,7 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/chat',
     component: () => import('src/layouts/ChatLayout.vue'),
+    meta: { requiresAuth: true },
     children: [
       {
         path: ':id',

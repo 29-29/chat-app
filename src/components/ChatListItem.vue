@@ -11,7 +11,7 @@ const props = defineProps<{
   id: string;
 }>();
 
-const { leaveRoom } = useRoom();
+const { leaveRoom, chatUsers } = useRoom(props.id);
 const loading = ref(true);
 const roomData = ref<{
   name: string;
@@ -67,7 +67,7 @@ const handleLeaveRoom = async (event: Event) => {
   if (!props.id) return;
 
   try {
-    await leaveRoom(props.id);
+    await leaveRoom();
     if (router.currentRoute.value.params.id === props.id) {
       await router.push('/chats');
     }
@@ -118,7 +118,7 @@ onUnmounted(() => {
     <q-item-section side>
       <div class="row items-center q-gutter-sm">
         <template v-if="roomData?.users?.length">
-          <OverlappingAvatars :users="roomData.users" right />
+          <OverlappingAvatars :users="chatUsers" right />
         </template>
         <q-btn
           icon="logout"

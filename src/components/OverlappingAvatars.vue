@@ -2,9 +2,10 @@
 import { onMounted, ref } from 'vue';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from 'src/boot/firebase';
+import { User } from './models';
 
 const props = defineProps<{
-  users: string[];
+  users: User[];
   right?: boolean;
 }>();
 
@@ -13,7 +14,7 @@ const userPhotos = ref<Array<{ id: string; url: string }>>([]);
 const fetchUserPhotos = async () => {
   try {
     const userDocs = await Promise.all(
-      props.users.map((userId) => getDoc(doc(db, 'users', userId)))
+      props.users.map((user) => getDoc(doc(db, 'users', user.id)))
     );
 
     userPhotos.value = userDocs
@@ -32,7 +33,7 @@ onMounted(fetchUserPhotos);
 
 <template>
   <q-avatar class="overlapping" size="sm">
-    <img
+    <q-img
       v-for="(user, index) in userPhotos.slice(0, 3)"
       :src="user.url"
       :key="user.id"
@@ -42,7 +43,11 @@ onMounted(fetchUserPhotos);
         `z-index-${userPhotos.length - index}`,
         `offset-${index}`,
       ]"
-    />
+    >
+      <q-tooltip>
+        {{ users[index].displayName }}
+      </q-tooltip>
+    </q-img>
   </q-avatar>
 </template>
 

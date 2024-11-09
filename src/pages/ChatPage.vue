@@ -25,7 +25,7 @@ interface ChatMessage {
 
 const route = useRoute();
 const roomID = <string>route.params?.id;
-const { room, fetchRoomData, updateLatestMessage } = useRoom();
+const { room, fetchRoomData, updateLatestMessage } = useRoom(roomID);
 const { currentUser } = useCurrentUser();
 
 // Users state
@@ -105,7 +105,7 @@ const sendMessage = async () => {
 };
 
 onMounted(async () => {
-  await fetchRoomData(roomID);
+  await fetchRoomData();
   await Promise.all([fetchMessages(), fetchUsers()]);
 });
 </script>

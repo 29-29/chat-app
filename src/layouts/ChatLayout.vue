@@ -9,8 +9,9 @@ import { chatroomsCol } from 'src/boot/firebase';
 
 const router = useRouter();
 const route = useRoute();
+const roomID = <string>route.params?.id;
 const { isLoggedIn, handleSignOut } = useAuth();
-const { room, fetchRoomData, joinRoom } = useRoom();
+const { room, fetchRoomData, joinRoom } = useRoom(roomID);
 
 let unsubscribe: (() => void) | null = null;
 
@@ -25,8 +26,8 @@ const subscribeToRoomChanges = (roomId: string) => {
 
 onMounted(async () => {
   const roomId = route.params.id as string;
-  await fetchRoomData(roomId);
-  await joinRoom(roomId);
+  await fetchRoomData();
+  await joinRoom();
   subscribeToRoomChanges(roomId);
 });
 

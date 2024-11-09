@@ -9,6 +9,7 @@ import { useRoom } from 'src/composables/room';
 const router = useRouter();
 const props = defineProps<{
   id: string;
+  maxLength?: number;
 }>();
 
 const { leaveRoom, chatUsers } = useRoom(props.id);
@@ -62,6 +63,14 @@ const formatTimestamp = (timestamp: Timestamp) => {
     : date.toLocaleString([], { hour: '2-digit', minute: '2-digit' });
 };
 
+const truncateMessage = (
+  text: string,
+  maxLength = props.maxLength as number
+) => {
+  if (text.length <= maxLength) return text;
+  return text.substring(0, maxLength) + '...';
+};
+
 const handleLeaveRoom = async (event: Event) => {
   event.stopPropagation();
   if (!props.id) return;
@@ -108,7 +117,7 @@ onUnmounted(() => {
         </div>
         <div class="text-caption text-grey">
           <template v-if="roomData?.latestMessage">
-            {{ roomData.latestMessage.text }} ·
+            {{ truncateMessage(roomData.latestMessage.text) }} ·
             {{ formatTimestamp(roomData.latestMessage.timestamp) }}
           </template>
           <template v-else>No messages yet</template>

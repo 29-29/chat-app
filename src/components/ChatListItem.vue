@@ -131,12 +131,13 @@ onUnmounted(() => {
       </div>
     </q-item-section>
     <q-item-section side>
-      <div class="row items-center q-gutter-sm">
-        <OverlappingAvatars :users="chatUsers" />
+      <div class="row items-center justify-end">
+        <OverlappingAvatars :users="chatUsers" left />
         <q-btn
           icon="logout"
           flat
           round
+          class="q-ml-md"
           @click="handleLeaveRoom"
           color="negative"
         />

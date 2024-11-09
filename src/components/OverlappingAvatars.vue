@@ -8,41 +8,83 @@ const props = defineProps<{
 }>();
 
 const visibleUsers = computed(() => props.users.slice(0, 3));
+const remainingUsers = computed(() => props.users.slice(3));
 const remainingCount = computed(() => Math.max(0, props.users.length - 3));
+const remainingNames = computed(() =>
+  remainingUsers.value.map((user) => user.displayName).join('\n')
+);
 </script>
 
 <template>
-  <div
-    class="row items-center no-wrap"
-    :class="{ 'justify-end': right, 'flex-row-reverse': right }"
-  >
-    <q-chip
-      v-if="remainingCount > 0"
-      dense
-      size="sm"
-      :class="right ? 'q-mr-sm' : 'q-ml-sm'"
-      color="grey-7"
-      text-color="white"
-    >
-      +{{ remainingCount }}
-    </q-chip>
-    <q-avatar class="overlapping" size="sm">
-      <q-img
-        v-for="(user, index) in visibleUsers"
-        :src="user.photoURL || ''"
-        :key="user.id"
-        :class="[
-          'avatar-img',
-          right ? 'right' : 'left',
-          `z-index-${visibleUsers.length - index}`,
-          `offset-${index}`,
-        ]"
+  <div class="row items-center no-wrap" :class="{ 'justify-end': right }">
+    <template v-if="!right">
+      <q-chip
+        v-if="remainingCount > 0"
+        dense
+        size="sm"
+        class="q-ml-sm"
+        color="grey-7"
+        text-color="white"
       >
-        <q-tooltip>
-          {{ user.displayName }}
+        +{{ remainingCount }}
+        <q-tooltip max-width="200px" anchor="bottom middle" self="top middle">
+          {{ remainingNames }}
         </q-tooltip>
-      </q-img>
-    </q-avatar>
+      </q-chip>
+      <q-avatar class="overlapping" size="sm">
+        <q-img
+          v-for="(user, index) in visibleUsers"
+          :src="user.photoURL || ''"
+          :key="user.id"
+          :class="[
+            'avatar-img',
+            'left',
+            `z-index-${visibleUsers.length - index}`,
+            `offset-${index}`,
+          ]"
+        >
+          <q-tooltip>
+            {{ user.displayName }}
+          </q-tooltip>
+        </q-img>
+      </q-avatar>
+    </template>
+    <template v-else>
+      <q-avatar class="overlapping" size="sm">
+        <q-img
+          v-for="(user, index) in visibleUsers"
+          :src="user.photoURL || ''"
+          :key="user.id"
+          :class="[
+            'avatar-img',
+            'right',
+            `z-index-${visibleUsers.length - index}`,
+            `offset-${index}`,
+          ]"
+        >
+          <q-tooltip>
+            {{ user.displayName }}
+          </q-tooltip>
+        </q-img>
+      </q-avatar>
+      <q-chip
+        v-if="remainingCount > 0"
+        dense
+        size="sm"
+        class="q-ml-sm"
+        color="grey-7"
+        text-color="white"
+      >
+        +{{ remainingCount }}
+        <q-tooltip
+          anchor="center middle"
+          self="center middle"
+          max-width="200px"
+        >
+          {{ remainingNames }}
+        </q-tooltip>
+      </q-chip>
+    </template>
   </div>
 </template>
 
@@ -56,7 +98,7 @@ const remainingCount = computed(() => Math.max(0, props.users.length - 3));
   position: absolute;
   width: 24px;
   height: 24px;
-  border: 2px solid white;
+  border: 2px solid var(--q-pink-5);
   border-radius: 50%;
 }
 

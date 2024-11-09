@@ -11,7 +11,7 @@ const router = useRouter();
 const route = useRoute();
 const roomID = <string>route.params?.id;
 const { isLoggedIn, handleSignOut } = useAuth();
-const { room, fetchRoomData, joinRoom } = useRoom(roomID);
+const { room, fetchRoomData, joinRoom, chatUsers } = useRoom(roomID);
 
 let unsubscribe: (() => void) | null = null;
 
@@ -49,7 +49,7 @@ onUnmounted(() => {
           </div>
           <div v-else class="flex items-center q-gutter-sm">
             <span class="text-weight-bold">{{ room.name }}</span>
-            <OverlappingAvatars :users="room.users" />
+            <OverlappingAvatars :users="chatUsers" />
           </div>
         </q-toolbar-title>
 

@@ -1,84 +1,79 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
-import { doc, getDoc } from 'firebase/firestore';
-import { db } from 'src/boot/firebase';
+import { computed } from 'vue';
 import { User } from './models';
 
 const props = defineProps<{
   users: User[];
-  right?: boolean;
+  left?: boolean;
 }>();
 
-const userPhotos = ref<Array<{ id: string; url: string }>>([]);
-
-const fetchUserPhotos = async () => {
-  try {
-    const userDocs = await Promise.all(
-      props.users.map((user) => getDoc(doc(db, 'users', user.id)))
-    );
-
-    userPhotos.value = userDocs
-      .filter((doc) => doc.exists())
-      .map((doc) => ({
-        id: doc.id,
-        url: doc.data().photoURL || '',
-      }));
-  } catch (error) {
-    console.error('Failed to get user photos', error);
-  }
-};
-
-onMounted(fetchUserPhotos);
+const visibleUsers = computed(() => {
+  const users = props.users.slice(0, 3);
+  return props.left ? users.reverse() : users;
+});
+const remainingCount = computed(() => Math.max(0, props.users.length - 3));
 </script>
 
 <template>
-  <q-avatar class="overlapping" size="sm">
-    <q-img
-      v-for="(user, index) in userPhotos.slice(0, 3)"
-      :src="user.url"
-      :key="user.id"
-      :class="[
-        'avatar-img',
-        right ? 'right-aligned' : 'left-aligned',
-        `z-index-${userPhotos.length - index}`,
-        `offset-${index}`,
-      ]"
-    >
+  <div class="row items-center no-wrap" :class="{ 'justify-end': left }">
+    <div class="overlapping-container" :class="{ 'align-right': left }">
+      <q-badge
+        rounded
+        v-if="remainingCount > 0"
+        class="remaining-badge"
+        :class="{ 'badge-left': left }"
+        color="pink-8"
+      >
+        +{{ remainingCount }}
+      </q-badge>
+      <q-avatar
+        v-for="(user, index) in visibleUsers"
+        :key="user.id"
+        size="sm"
+        class="overlapping"
+        :style="`${left ? 'right' : 'left'}: ${index * 0.75}em; z-index: ${
+          left ? index + 1 : visibleUsers.length - index
+        }`"
+      >
+        <img :src="user.photoURL || ''" class="avatar-img" />
+      </q-avatar>
       <q-tooltip>
-        {{ users[index].displayName }}
+        {{ props.users.map((user) => user.displayName).join('\n') }}
       </q-tooltip>
-    </q-img>
-  </q-avatar>
+    </div>
+  </div>
 </template>
 
-<style lang="sass">
-.overlapping
+<style lang="sass" scoped>
+.overlapping-container
   position: relative
+  width: 3em
+  height: 2em
+  display: flex
+  align-items: center
 
-  .avatar-img
-    position: absolute
-    width: 64px
-    height: 64px
-    border-radius: 50%
-    border: 2px solid $pink-5
+.align-right
+  position: relative
+  left: 100%
+  transform: translateX(-100%)
 
-    &.left-aligned
-      &.offset-0
-        left: 0
-      &.offset-1
-        left: 20px
-      &.offset-2
-        left: 40px
+.overlapping
+  position: absolute
 
-    &.right-aligned
-      &.offset-0
-        right: 0
-      &.offset-1
-        right: 20px
-      &.offset-2
-        right: 40px
+.avatar-img
+  border: 2px solid $pink-8
+  border-radius: 50%
 
-    @for $i from 0 through 3
-      &.z-index-#{$i}
-        z-index: $i
+.remaining-badge
+  position: absolute
+  right: -2em
+  min-width: 1.125em
+  height: 1.125em
+  font-size: 0.625em
+  padding: 0 0.25em
+  z-index: 4
+
+.badge-left
+  right: unset
+  left: -4em
 </style>

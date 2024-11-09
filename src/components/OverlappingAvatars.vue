@@ -4,131 +4,61 @@ import { User } from './models';
 
 const props = defineProps<{
   users: User[];
-  right?: boolean;
 }>();
 
 const visibleUsers = computed(() => props.users.slice(0, 3));
-const remainingUsers = computed(() => props.users.slice(3));
 const remainingCount = computed(() => Math.max(0, props.users.length - 3));
-const remainingNames = computed(() =>
-  remainingUsers.value.map((user) => user.displayName).join('\n')
-);
 </script>
 
 <template>
-  <div class="row items-center no-wrap" :class="{ 'justify-end': right }">
-    <template v-if="!right">
-      <q-chip
-        v-if="remainingCount > 0"
-        dense
+  <div class="row items-center no-wrap">
+    <div class="overlapping-container">
+      <q-avatar
+        v-for="(user, index) in visibleUsers"
+        :key="user.id"
         size="sm"
-        class="q-ml-sm"
-        color="grey-7"
-        text-color="white"
+        class="overlapping"
+        :style="`right: ${index * 0.75}em; z-index: ${
+          visibleUsers.length - index
+        }`"
+      >
+        <img :src="user.photoURL || ''" class="avatar-img" />
+      </q-avatar>
+      <q-tooltip>
+        {{ props.users.map((user) => user.displayName).join('\n') }}
+      </q-tooltip>
+      <q-badge
+        rounded
+        v-if="remainingCount > 0"
+        class="remaining-badge"
+        color="pink-8"
       >
         +{{ remainingCount }}
-        <q-tooltip max-width="200px" anchor="bottom middle" self="top middle">
-          {{ remainingNames }}
-        </q-tooltip>
-      </q-chip>
-      <q-avatar class="overlapping" size="sm">
-        <q-img
-          v-for="(user, index) in visibleUsers"
-          :src="user.photoURL || ''"
-          :key="user.id"
-          :class="[
-            'avatar-img',
-            'left',
-            `z-index-${visibleUsers.length - index}`,
-            `offset-${index}`,
-          ]"
-        >
-          <q-tooltip>
-            {{ user.displayName }}
-          </q-tooltip>
-        </q-img>
-      </q-avatar>
-    </template>
-    <template v-else>
-      <q-avatar class="overlapping" size="sm">
-        <q-img
-          v-for="(user, index) in visibleUsers"
-          :src="user.photoURL || ''"
-          :key="user.id"
-          :class="[
-            'avatar-img',
-            'right',
-            `z-index-${visibleUsers.length - index}`,
-            `offset-${index}`,
-          ]"
-        >
-          <q-tooltip>
-            {{ user.displayName }}
-          </q-tooltip>
-        </q-img>
-      </q-avatar>
-      <q-chip
-        v-if="remainingCount > 0"
-        dense
-        size="sm"
-        class="q-ml-sm"
-        color="grey-7"
-        text-color="white"
-      >
-        +{{ remainingCount }}
-        <q-tooltip
-          anchor="center middle"
-          self="center middle"
-          max-width="200px"
-        >
-          {{ remainingNames }}
-        </q-tooltip>
-      </q-chip>
-    </template>
+      </q-badge>
+    </div>
   </div>
 </template>
 
-<style scoped>
-.overlapping {
-  position: relative;
-  width: 32px;
-}
+<style lang="sass" scoped>
+.overlapping-container
+  position: relative
+  width: 3em
+  height: 2em
+  display: flex
+  align-items: center
 
-.avatar-img {
-  position: absolute;
-  width: 24px;
-  height: 24px;
-  border: 2px solid var(--q-pink-5);
-  border-radius: 50%;
-}
+.overlapping
+  position: absolute
 
-.left.offset-0 {
-  left: 0;
-}
-.left.offset-1 {
-  left: 12px;
-}
-.left.offset-2 {
-  left: 24px;
-}
+.avatar-img
+  border: 2px solid $pink-8
+  border-radius: 50%
 
-.right.offset-0 {
-  right: 0;
-}
-.right.offset-1 {
-  right: 12px;
-}
-.right.offset-2 {
-  right: 24px;
-}
-
-.z-index-1 {
-  z-index: 1;
-}
-.z-index-2 {
-  z-index: 2;
-}
-.z-index-3 {
-  z-index: 3;
-}
+.remaining-badge
+  position: absolute
+  right: -2em
+  min-width: 1.125em
+  height: 1.125em
+  font-size: 0.625em
+  padding: 0 0.25em
 </style>

@@ -1,30 +1,49 @@
 <script setup lang="ts">
+import { computed } from 'vue';
 import { User } from './models';
 
 const props = defineProps<{
   users: User[];
   right?: boolean;
 }>();
+
+const visibleUsers = computed(() => props.users.slice(0, 3));
+const remainingCount = computed(() => Math.max(0, props.users.length - 3));
 </script>
 
 <template>
-  <q-avatar class="overlapping" size="sm">
-    <q-img
-      v-for="(user, index) in props.users.slice(0, 3)"
-      :src="user.photoURL || ''"
-      :key="user.id || ''"
-      :class="[
-        'avatar-img',
-        props.right ? 'right' : 'left',
-        `z-index-${props.users.length - index}`,
-        `offset-${index}`,
-      ]"
+  <div
+    class="row items-center no-wrap"
+    :class="{ 'justify-end': right, 'flex-row-reverse': right }"
+  >
+    <q-chip
+      v-if="remainingCount > 0"
+      dense
+      size="sm"
+      :class="right ? 'q-mr-sm' : 'q-ml-sm'"
+      color="grey-7"
+      text-color="white"
     >
-      <q-tooltip>
-        {{ user.displayName }}
-      </q-tooltip>
-    </q-img>
-  </q-avatar>
+      +{{ remainingCount }}
+    </q-chip>
+    <q-avatar class="overlapping" size="sm">
+      <q-img
+        v-for="(user, index) in visibleUsers"
+        :src="user.photoURL || ''"
+        :key="user.id"
+        :class="[
+          'avatar-img',
+          right ? 'right' : 'left',
+          `z-index-${visibleUsers.length - index}`,
+          `offset-${index}`,
+        ]"
+      >
+        <q-tooltip>
+          {{ user.displayName }}
+        </q-tooltip>
+      </q-img>
+    </q-avatar>
+  </div>
 </template>
 
 <style scoped>

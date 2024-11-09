@@ -12,7 +12,7 @@ const props = defineProps<{
   maxLength?: number;
 }>();
 
-const { leaveRoom, chatUsers } = useRoom(props.id);
+const { leaveRoom, chatUsers, fetchRoomData } = useRoom(props.id);
 const loading = ref(true);
 const roomData = ref<{
   name: string;
@@ -26,10 +26,12 @@ const roomData = ref<{
 
 let unsubscribe: (() => void) | null = null;
 
-const subscribeToRoom = (roomId: string) => {
+const subscribeToRoom = async (roomId: string) => {
+  await fetchRoomData();
+
   unsubscribe = onSnapshot(
     doc(chatroomsCol, roomId),
-    (snapshot) => {
+    async (snapshot) => {
       if (snapshot.exists()) {
         const data = snapshot.data();
         roomData.value = {
@@ -44,6 +46,10 @@ const subscribeToRoom = (roomId: string) => {
                 }
               : undefined,
         };
+
+        if (data.users?.length !== chatUsers.value?.length) {
+          await fetchRoomData();
+        }
       }
       loading.value = false;
     },
@@ -85,8 +91,8 @@ const handleLeaveRoom = async (event: Event) => {
   }
 };
 
-onMounted(() => {
-  subscribeToRoom(props.id);
+onMounted(async () => {
+  await subscribeToRoom(props.id);
 });
 
 onUnmounted(() => {
@@ -126,9 +132,7 @@ onUnmounted(() => {
     </q-item-section>
     <q-item-section side>
       <div class="row items-center q-gutter-sm">
-        <template v-if="roomData?.users?.length">
-          <OverlappingAvatars :users="chatUsers" right />
-        </template>
+        <OverlappingAvatars :users="chatUsers" />
         <q-btn
           icon="logout"
           flat

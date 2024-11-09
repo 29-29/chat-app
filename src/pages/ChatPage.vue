@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import {
-  DocumentData,
   getDocs,
   query,
   where,
@@ -20,7 +19,11 @@ import { useCurrentUser } from 'src/composables/currentUser';
 
 interface ChatMessage {
   id: string;
-  data: DocumentData;
+  data: {
+    message: string;
+    author: string;
+    timestamp: Timestamp;
+  };
 }
 
 const route = useRoute();
@@ -48,17 +51,31 @@ const fetchUsers = async () => {
 
 // Messages state
 const messages = computed(() =>
-  messagesRaw.value.map((msg) => {
-    const data = msg.data;
-    return {
-      id: msg.id,
-      data: {
-        message: data.message,
-        author: chatUsers.value.find((user) => user.id === data.author),
-        timestamp: data.timestamp,
-      },
-    };
-  })
+  messagesRaw.value
+    .map((msg) => {
+      const data = msg.data;
+      const author = chatUsers.value.find((user) => user.id === data.author);
+
+      // Skip messages with missing author
+      if (!author) return null;
+
+      return {
+        id: msg.id,
+        data: {
+          message: data.message,
+          author,
+          timestamp: data.timestamp,
+        },
+      };
+    })
+    .filter(
+      (
+        msg
+      ): msg is {
+        id: string;
+        data: { message: string; author: User; timestamp: Timestamp };
+      } => msg !== null
+    )
 );
 
 const fetchMessages = async () => {
@@ -67,7 +84,11 @@ const fetchMessages = async () => {
     const querySnapshot = await getDocs(q);
     messagesRaw.value = querySnapshot.docs.map((doc) => ({
       id: doc.id,
-      data: doc.data(),
+      data: doc.data() as {
+        message: string;
+        author: string;
+        timestamp: Timestamp;
+      },
     }));
   } catch (error) {
     console.error('Failed to fetch messages', error);

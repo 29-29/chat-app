@@ -92,6 +92,7 @@ onUnmounted(() => {
         v-for="room in allRooms"
         :key="room.id"
         :id="room.id"
+        :max-length="100"
       />
     </template>
   </q-list>

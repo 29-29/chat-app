@@ -1,26 +1,23 @@
 <script setup lang="ts">
 import { computed } from 'vue';
+import { User } from './models';
+import { Timestamp } from 'firebase/firestore';
 
-const props = defineProps({
-  data: {
-    type: Object,
-    required: true,
-    default: () => ({
-      author: {
-        id: '',
-        displayName: '',
-        photoURL: '',
-      },
-      message: '',
-      timestamp: null,
-    }),
-  },
-});
+interface MessageData {
+  author: User;
+  message: string;
+  timestamp: Timestamp;
+}
 
-// Add these computed values to access the data
-const message = computed(() => props.data.message);
-const avatar = computed(() => props.data.author.photoURL);
-const author = computed(() => props.data.author.displayName);
+const props = defineProps<{
+  data: MessageData;
+}>();
+
+const message = computed(() => props.data?.message || '');
+const avatar = computed(() => props.data?.author?.photoURL || '');
+const author = computed(
+  () => props.data?.author?.displayName || 'Unknown User'
+);
 </script>
 
 <template>
@@ -34,13 +31,13 @@ const author = computed(() => props.data.author.displayName);
         {{ message }}
         <q-chip dense size="sm" class="q-ml-sm text-grey-7 self-center">
           {{
-            props.data.timestamp?.toDate().toLocaleDateString() ===
+            props.data?.timestamp?.toDate().toLocaleDateString() ===
             new Date().toLocaleDateString()
-              ? props.data.timestamp?.toDate().toLocaleTimeString([], {
+              ? props.data?.timestamp?.toDate().toLocaleTimeString([], {
                   hour: '2-digit',
                   minute: '2-digit',
                 })
-              : props.data.timestamp
+              : props.data?.timestamp
                   ?.toDate()
                   .toLocaleString([], { hour: '2-digit', minute: '2-digit' })
           }}

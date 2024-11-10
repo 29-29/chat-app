@@ -5,6 +5,7 @@ import { doc, onSnapshot, Timestamp } from 'firebase/firestore';
 import { chatroomsCol } from 'src/boot/firebase';
 import OverlappingAvatars from 'src/components/OverlappingAvatars.vue';
 import { useRoom } from 'src/composables/room';
+import ConfirmLeaveRoomDialog from './ConfirmLeaveRoomDialog.vue';
 
 const router = useRouter();
 const props = defineProps<{
@@ -77,8 +78,14 @@ const truncateMessage = (
   return text.substring(0, maxLength) + '...';
 };
 
+const showConfirmDialog = ref(false);
+
 const handleLeaveRoom = async (event: Event) => {
   event.stopPropagation();
+  showConfirmDialog.value = true;
+};
+
+const confirmLeave = async () => {
   if (!props.id) return;
 
   try {
@@ -144,4 +151,5 @@ onUnmounted(() => {
       </div>
     </q-item-section>
   </q-item>
+  <ConfirmLeaveRoomDialog v-model="showConfirmDialog" @confirm="confirmLeave" />
 </template>

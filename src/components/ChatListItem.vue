@@ -127,6 +127,14 @@ onUnmounted(() => {
             text-color="white"
             label="Public"
           />
+          <q-chip
+            v-if="roomData && roomData.private"
+            dense
+            size="sm"
+            color="pink-5"
+            label="Private"
+            outline
+          />
         </div>
         <div class="text-caption text-grey">
           <template v-if="roomData?.latestMessage">

@@ -17,6 +17,7 @@ import { useRoute } from 'vue-router';
 import { useRoom } from 'src/composables/room';
 import { useCurrentUser } from 'src/composables/currentUser';
 import ChatMessageList from 'src/components/ChatMessageList.vue';
+import ChatInput from 'src/components/ChatInput.vue';
 
 interface ChatMessage {
   id: string;
@@ -143,28 +144,7 @@ onMounted(async () => {
     <q-skeleton type="text" />
   </div>
   <div v-else class="chat-container">
-    <q-form class="q-ma-md" @submit.prevent>
-      <q-input
-        v-model="newMessage"
-        label="Type a message"
-        dense
-        outlined
-        class="q-mb-md"
-      >
-        <template v-slot:after>
-          <q-btn
-            round
-            dense
-            flat
-            icon="send"
-            color="pink-5"
-            type="submit"
-            @click="sendMessage"
-          />
-        </template>
-      </q-input>
-    </q-form>
-
+    <ChatInput @sendMessage="sendMessage" />
     <ChatMessageList
       class="q-ma-md full-height messages-container rounded-borders"
       :messages="messages"
@@ -181,6 +161,5 @@ onMounted(async () => {
 
 .messages-container
   flex: 1
-  border: 1px solid $pink-11
   margin-top: 0
 </style>

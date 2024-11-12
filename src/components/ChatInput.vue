@@ -3,10 +3,11 @@ import { ref } from 'vue';
 
 const newMessage = ref('');
 
-const emit = defineEmits(['sendMessage']);
+const $emit = defineEmits(['sendMessage']);
 
 const sendMessage = () => {
-  emit('sendMessage', newMessage.value);
+  $emit('sendMessage', newMessage.value);
+  newMessage.value = '';
 };
 </script>
 

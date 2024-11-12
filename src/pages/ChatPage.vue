@@ -103,28 +103,25 @@ const fetchMessages = async () => {
   }
 };
 
-const newMessage = ref('');
-
-const sendMessage = async () => {
-  if (!newMessage.value.trim()) return;
+const sendMessage = async (newMessage: string) => {
+  if (!newMessage.trim()) return;
 
   try {
     const timestamp = serverTimestamp() as Timestamp;
 
     // Send the message
     await addDoc(messagesCol(roomID), {
-      message: newMessage.value,
+      message: newMessage,
       author: currentUser.value?.uid,
       timestamp,
     });
 
     // Update room's latest message
     await updateLatestMessage(roomID, {
-      text: newMessage.value,
+      text: newMessage,
       timestamp,
     });
 
-    newMessage.value = '';
     await fetchMessages();
   } catch (error) {
     console.error('Failed to send message:', error);

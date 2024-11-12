@@ -3,9 +3,9 @@ import { computed } from 'vue';
 import { User } from './models';
 import { Timestamp } from 'firebase/firestore';
 
-interface MessageData {
-  author: User;
+export interface MessageData {
   message: string;
+  author: User;
   timestamp: Timestamp;
 }
 

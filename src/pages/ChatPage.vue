@@ -10,12 +10,13 @@ import {
   orderBy,
 } from 'firebase/firestore';
 import { messagesCol, usersCol } from 'src/boot/firebase';
-import ChatMessage from 'src/components/ChatMessage.vue';
+import ChatMessage, { MessageData } from 'src/components/ChatMessage.vue';
 import { User } from 'src/components/models';
 import { computed, onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import { useRoom } from 'src/composables/room';
 import { useCurrentUser } from 'src/composables/currentUser';
+import ChatMessageList from 'src/components/ChatMessageList.vue';
 
 interface ChatMessage {
   id: string;
@@ -63,9 +64,9 @@ const messages = computed(() =>
         id: msg.id,
         data: {
           message: data.message,
-          author,
+          author: author as User,
           timestamp: data.timestamp,
-        },
+        } as MessageData,
       };
     })
     .filter(
@@ -73,7 +74,11 @@ const messages = computed(() =>
         msg
       ): msg is {
         id: string;
-        data: { message: string; author: User; timestamp: Timestamp };
+        data: {
+          message: string;
+          author: User;
+          timestamp: Timestamp;
+        };
       } => msg !== null
     )
 );
@@ -132,48 +137,50 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="q-pa-md">
-    <div v-if="room.loading || loading" class="q-pa-md">
-      <q-skeleton type="text" class="q-mb-sm" />
-      <q-skeleton type="text" class="q-mb-sm" />
-      <q-skeleton type="text" />
-    </div>
-    <div v-else>
-      <q-form class="q-mt-md" @submit.prevent>
-        <q-input
-          v-model="newMessage"
-          label="Type a message"
-          dense
-          outlined
-          class="q-mb-md"
-        >
-          <template v-slot:after>
-            <q-btn
-              round
-              dense
-              flat
-              icon="send"
-              color="pink-5"
-              type="submit"
-              @click="sendMessage"
-            />
-          </template>
-        </q-input>
-      </q-form>
+  <div v-if="room.loading || loading">
+    <q-skeleton type="text" class="q-mb-sm" />
+    <q-skeleton type="text" class="q-mb-sm" />
+    <q-skeleton type="text" />
+  </div>
+  <div v-else class="chat-container">
+    <q-form class="q-ma-md" @submit.prevent>
+      <q-input
+        v-model="newMessage"
+        label="Type a message"
+        dense
+        outlined
+        class="q-mb-md"
+      >
+        <template v-slot:after>
+          <q-btn
+            round
+            dense
+            flat
+            icon="send"
+            color="pink-5"
+            type="submit"
+            @click="sendMessage"
+          />
+        </template>
+      </q-input>
+    </q-form>
 
-      <div v-if="messages.length === 0" class="text-center q-pa-md text-grey">
-        <q-icon name="chat" size="48px" color="grey-4" />
-        <div class="text-h6 q-mt-sm">No messages yet</div>
-        <div class="text-caption">Be the first to start the conversation!</div>
-      </div>
-
-      <template v-else>
-        <ChatMessage
-          v-for="message in messages"
-          :key="message.id"
-          :data="message.data"
-        />
-      </template>
-    </div>
+    <ChatMessageList
+      class="q-ma-md full-height messages-container rounded-borders"
+      :messages="messages"
+    />
   </div>
 </template>
+
+<style lang="sass" scoped>
+.chat-container
+  height: calc(100vh - 50px)
+  display: flex
+  flex-direction: column
+  padding-top: 0
+
+.messages-container
+  flex: 1
+  border: 1px solid $pink-11
+  margin-top: 0
+</style>

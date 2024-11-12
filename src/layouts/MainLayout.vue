@@ -44,5 +44,34 @@ const userLoading = computed(() => !user.value);
     <q-page-container>
       <router-view />
     </q-page-container>
+    <q-footer bordered class="bg-pink-1 text-grey-8">
+      <q-toolbar>
+        <div class="row items-center q-gutter-sm">
+          <q-btn
+            dense
+            no-caps
+            round
+            href="https://github.com/29-29/chat-app"
+            target="_blank"
+          >
+            <q-icon name="img:src/assets/github-mark.svg" color="grey-8" />
+          </q-btn>
+          <div>
+            Made with <q-icon name="favorite" color="pink-13" size="sm" /> by
+          </div>
+          <q-btn
+            no-caps
+            dense
+            rounded
+            unelevated
+            color="pink-13"
+            href="https://github.com/29-29"
+            target="_blank"
+            label="Ahmad"
+            class="q-px-sm"
+          />
+        </div>
+      </q-toolbar>
+    </q-footer>
   </q-layout>
 </template>

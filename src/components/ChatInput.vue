@@ -20,6 +20,7 @@ const sendMessage = () => {
       dense
       outlined
       rounded
+      autogrow
     >
       <template v-slot:after>
         <q-btn

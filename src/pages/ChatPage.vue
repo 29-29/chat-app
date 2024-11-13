@@ -17,6 +17,7 @@ import { useRoute } from 'vue-router';
 import { useRoom } from 'src/composables/room';
 import { useCurrentUser } from 'src/composables/currentUser';
 import ChatMessageList from 'src/components/ChatMessageList.vue';
+import ChatInput from 'src/components/ChatInput.vue';
 
 interface ChatMessage {
   id: string;
@@ -102,28 +103,25 @@ const fetchMessages = async () => {
   }
 };
 
-const newMessage = ref('');
-
-const sendMessage = async () => {
-  if (!newMessage.value.trim()) return;
+const sendMessage = async (newMessage: string) => {
+  if (!newMessage.trim()) return;
 
   try {
     const timestamp = serverTimestamp() as Timestamp;
 
     // Send the message
     await addDoc(messagesCol(roomID), {
-      message: newMessage.value,
+      message: newMessage,
       author: currentUser.value?.uid,
       timestamp,
     });
 
     // Update room's latest message
     await updateLatestMessage(roomID, {
-      text: newMessage.value,
+      text: newMessage,
       timestamp,
     });
 
-    newMessage.value = '';
     await fetchMessages();
   } catch (error) {
     console.error('Failed to send message:', error);
@@ -143,36 +141,30 @@ onMounted(async () => {
     <q-skeleton type="text" />
   </div>
   <div v-else class="chat-container">
-    <q-form class="q-ma-md" @submit.prevent>
-      <q-input
-        v-model="newMessage"
-        label="Type a message"
-        dense
-        outlined
-        class="q-mb-md"
-      >
-        <template v-slot:after>
-          <q-btn
-            round
-            dense
-            flat
-            icon="send"
-            color="pink-5"
-            type="submit"
-            @click="sendMessage"
-          />
-        </template>
-      </q-input>
-    </q-form>
-
     <ChatMessageList
       class="q-ma-md full-height messages-container rounded-borders"
       :messages="messages"
     />
+    <q-page-sticky position="top" expand class="q-ma-md input-container">
+      <ChatInput @sendMessage="sendMessage" style="width: 100%" />
+    </q-page-sticky>
   </div>
 </template>
 
 <style lang="sass" scoped>
+.input-container
+  transition: all 0.25s ease-in-out
+  background-color: white
+  border: 1px solid $pink-2
+  border-radius: 50px
+  opacity: 20%
+  &:focus-within
+    border: 1px solid $pink-8
+    opacity: 100%
+  &:hover:not(:focus-within)
+    border-color: $pink-4
+    opacity: 60%
+
 .chat-container
   height: calc(100vh - 50px)
   display: flex
@@ -181,6 +173,5 @@ onMounted(async () => {
 
 .messages-container
   flex: 1
-  border: 1px solid $pink-11
   margin-top: 0
 </style>

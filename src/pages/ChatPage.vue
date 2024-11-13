@@ -141,15 +141,30 @@ onMounted(async () => {
     <q-skeleton type="text" />
   </div>
   <div v-else class="chat-container">
-    <ChatInput @sendMessage="sendMessage" />
     <ChatMessageList
       class="q-ma-md full-height messages-container rounded-borders"
       :messages="messages"
     />
+    <q-page-sticky position="top" expand class="q-ma-md input-container">
+      <ChatInput @sendMessage="sendMessage" style="width: 100%" />
+    </q-page-sticky>
   </div>
 </template>
 
 <style lang="sass" scoped>
+.input-container
+  transition: all 0.25s ease-in-out
+  background-color: white
+  border: 1px solid $pink-2
+  border-radius: 50px
+  opacity: 20%
+  &:focus-within
+    border: 1px solid $pink-8
+    opacity: 100%
+  &:hover:not(:focus-within)
+    border-color: $pink-4
+    opacity: 60%
+
 .chat-container
   height: calc(100vh - 50px)
   display: flex

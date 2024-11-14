@@ -1,0 +1,9 @@
+name: Feature request
+description: Suggest an idea for this project
+title: ''
+labels: ['🌟 feature']
+assignees: '29-29'
+body:
+  - type: textarea
+    - attributes:
+      - placeholder: Describe your feature

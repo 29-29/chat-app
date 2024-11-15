@@ -86,7 +86,7 @@ const messages = computed(() =>
 
 const fetchMessages = async () => {
   try {
-    const q = query(messagesCol(roomID), orderBy('timestamp', 'desc'));
+    const q = query(messagesCol(roomID), orderBy('timestamp', 'asc'));
     const querySnapshot = await getDocs(q);
     messagesRaw.value = querySnapshot.docs.map((doc) => ({
       id: doc.id,
@@ -140,14 +140,9 @@ onMounted(async () => {
     <q-skeleton type="text" class="q-mb-sm" />
     <q-skeleton type="text" />
   </div>
-  <div v-else class="chat-container">
-    <ChatMessageList
-      class="q-ma-md full-height messages-container rounded-borders"
-      :messages="messages"
-    />
-    <q-page-sticky position="top" expand class="q-ma-md input-container">
-      <ChatInput @sendMessage="sendMessage" style="width: 100%" />
-    </q-page-sticky>
+  <div v-else class="chat-container q-pa-md">
+    <ChatInput @sendMessage="sendMessage" style="width: inherit" />
+    <ChatMessageList class="full-height" :messages="messages" />
   </div>
 </template>
 
@@ -169,9 +164,5 @@ onMounted(async () => {
   height: calc(100vh - 50px)
   display: flex
   flex-direction: column
-  padding-top: 0
-
-.messages-container
-  flex: 1
-  margin-top: 0
+  gap: $flex-gutter-md
 </style>

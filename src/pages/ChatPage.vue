@@ -86,7 +86,7 @@ const messages = computed(() =>
 
 const fetchMessages = async () => {
   try {
-    const q = query(messagesCol(roomID), orderBy('timestamp', 'desc'));
+    const q = query(messagesCol(roomID), orderBy('timestamp', 'asc'));
     const querySnapshot = await getDocs(q);
     messagesRaw.value = querySnapshot.docs.map((doc) => ({
       id: doc.id,

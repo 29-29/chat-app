@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue';
-import { collection, getDocs, query, where } from 'firebase/firestore';
+import { doc, getDoc } from 'firebase/firestore';
 import { db } from 'src/boot/firebase';
 
 const emits = defineEmits(['createRoom', 'joinRoom']);
@@ -17,12 +17,8 @@ const checkRoomExists = async (code: string) => {
 
   isChecking.value = true;
   try {
-    const roomQuery = query(
-      collection(db, 'chatrooms'),
-      where('code', '==', code)
-    );
-    const snapshot = await getDocs(roomQuery);
-    roomExists.value = !snapshot.empty;
+    const snapshot = await getDoc(doc(db, 'chatrooms', code));
+    roomExists.value = snapshot.exists();
   } catch (error) {
     console.error('Failed to check room:', error);
     roomExists.value = false;

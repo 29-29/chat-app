@@ -1,14 +1,11 @@
 <script setup lang="ts">
 import {
   arrayUnion,
-  collection,
   updateDoc,
-  query,
-  getDocs,
-  where,
   serverTimestamp,
   doc,
   setDoc,
+  getDoc,
 } from 'firebase/firestore';
 import { db } from 'src/boot/firebase';
 import ChatList from 'src/components/ChatList.vue';
@@ -26,14 +23,10 @@ const router = useRouter();
 
 const handleJoinRoom = async (code: string) => {
   try {
-    const roomQuery = query(
-      collection(db, 'chatrooms'),
-      where('code', '==', code)
-    );
-    const snapshot = await getDocs(roomQuery);
+    const room = await getDoc(doc(db, 'chatrooms', code));
 
-    if (!snapshot.empty) {
-      const roomId = snapshot.docs[0].id;
+    if (room.exists()) {
+      const roomId = room.id;
       await router.push(`/chat/${roomId}`);
     }
   } catch (error) {

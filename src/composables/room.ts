@@ -9,11 +9,25 @@ import {
   Timestamp,
   arrayUnion,
   DocumentData,
+  serverTimestamp,
 } from 'firebase/firestore';
 import { chatroomsCol, usersCol } from 'src/boot/firebase';
 import { reactive, ref } from 'vue';
 import { User } from 'src/components/models';
 import { useCurrentUser } from './currentUser';
+
+// This will be the default schema of chatroom documents that will be fetched
+// from the database
+export interface ChatroomSchema {
+  id: string;
+  data: {
+    createdAt: Timestamp;
+    latestMessageText?: string;
+    latestMessageTimestamp?: Timestamp;
+    name: string;
+    private: boolean;
+  };
+}
 
 export function useRoom(roomID: string) {
   const room = reactive({
@@ -22,7 +36,7 @@ export function useRoom(roomID: string) {
     users: [],
     latestMessage: {
       text: '',
-      timestamp: Timestamp.now(),
+      timestamp: serverTimestamp(),
     },
   });
 

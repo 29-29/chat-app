@@ -1,10 +1,7 @@
 <script setup lang="ts">
 import { ref, defineProps } from 'vue';
 import { MessageData } from './ChatMessage.vue';
-// import { scroll } from 'quasar';
 import ChatMessage from './ChatMessage.vue';
-
-// const { getScrollHeight } = scroll;
 
 const props = defineProps<{
   messages: {

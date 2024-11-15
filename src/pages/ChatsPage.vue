@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import {
-  addDoc,
   arrayUnion,
   collection,
   updateDoc,
@@ -9,6 +8,7 @@ import {
   where,
   serverTimestamp,
   doc,
+  setDoc,
 } from 'firebase/firestore';
 import { db } from 'src/boot/firebase';
 import ChatList from 'src/components/ChatList.vue';
@@ -58,13 +58,12 @@ const handleCreateRoom = async (
 
   try {
     // Create room with initial data
-    const roomRef = await addDoc(collection(db, 'chatrooms'), {
-      code,
+    const roomRef = doc(db, 'chatrooms', code);
+    await setDoc(roomRef, {
       name: roomName,
       private: isPrivate,
       users: [currentUser.value.uid],
       createdAt: serverTimestamp(),
-      lastMessageTime: serverTimestamp(),
     });
 
     // Update user's rooms array

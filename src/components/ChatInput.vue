@@ -12,14 +12,13 @@ const sendMessage = () => {
 </script>
 
 <template>
-  <q-form class="q-ma-sm" @submit.prevent>
+  <q-form @submit.prevent>
     <q-input
       v-model="newMessage"
       placeholder="Type a message"
       color="pink-5"
       dense
       outlined
-      rounded
       autogrow
     >
       <template v-slot:after>

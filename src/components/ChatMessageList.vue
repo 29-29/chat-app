@@ -2,12 +2,7 @@
 import { ref, defineProps, onMounted, computed } from 'vue';
 import { MessageData } from './ChatMessage.vue';
 import ChatMessage from './ChatMessage.vue';
-import { QScrollArea, scroll } from 'quasar';
-const {
-  // getVerticalScrollPosition,
-  // setVerticalScrollPosition,
-  // getScrollHeight,
-} = scroll;
+import { QScrollArea } from 'quasar';
 
 const props = defineProps<{
   messages: {
@@ -26,9 +21,9 @@ const clientHeight = computed(
 const scrollPercentage = computed(
   () => scrollAreaRef.value?.getScrollPercentage().top
 );
-const showToBottomBtn = computed(() => {
-  return scrollHeight.value > clientHeight.value && scrollPercentage.value != 1;
-});
+const showToBottomBtn = computed(
+  () => scrollHeight.value >= clientHeight.value && scrollPercentage.value != 1
+);
 const scrollToBottom = () => {
   scrollAreaRef.value?.setScrollPercentage('vertical', 1, 300);
 };
@@ -60,12 +55,14 @@ onMounted(() => {
         </q-item>
       </q-list>
       <TransitionGroup name="toBottomBtn">
-        <q-page-sticky v-if="showToBottomBtn" position="bottom" class="q-mb-md">
+        <q-page-sticky v-if="showToBottomBtn" position="bottom" class="q-mb-lg">
           <q-btn
             color="pink-5"
             @click="scrollToBottom"
-            :label="scrollPercentage"
+            icon="arrow_downward"
+            round
             dense
+            unelevated
           />
         </q-page-sticky>
       </TransitionGroup>

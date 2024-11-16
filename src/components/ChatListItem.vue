@@ -8,10 +8,22 @@ import { useRoom } from 'src/composables/room';
 import ConfirmLeaveRoomDialog from './ConfirmLeaveRoomDialog.vue';
 
 const router = useRouter();
-const props = defineProps<{
-  id: string;
-  maxLength?: number;
-}>();
+const props = defineProps({
+  id: {
+    type: String,
+    required: true,
+  },
+  maxLength: {
+    type: Number,
+    default: 30,
+    required: false,
+  },
+  icons: {
+    type: Boolean,
+    default: true,
+    required: false,
+  },
+});
 
 const { leaveRoom, chatUsers, fetchRoomData } = useRoom(props.id);
 const loading = ref(true);
@@ -117,23 +129,13 @@ onUnmounted(() => {
         <q-skeleton type="text" width="50px" />
       </div>
       <div v-else>
-        <div class="row items-center q-gutter-sm">
-          <div class="text-weight-bold">{{ roomData?.name }}</div>
-          <q-chip
-            v-if="roomData && !roomData.private"
-            dense
-            size="sm"
-            color="pink-5"
-            text-color="white"
-            label="Public"
-          />
-          <q-chip
-            v-if="roomData && roomData.private"
-            dense
-            size="sm"
-            color="pink-5"
-            label="Private"
-            outline
+        <div class="row items-center q-gutter-xs">
+          <div class="text-weight-bold">
+            {{ roomData?.name }}
+          </div>
+          <q-icon
+            v-if="props.icons"
+            :name="roomData?.private ? 'lock' : 'public'"
           />
         </div>
         <div class="text-caption text-grey">

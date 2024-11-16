@@ -47,7 +47,7 @@ const subscribeToUserRooms = async () => {
   );
 };
 
-const subscribeToPublicRooms = () => {
+const subscribeToPublicRooms = async () => {
   const publicRoomsQuery = query(chatroomsCol, where('private', '==', false));
 
   unsubscribePublic = onSnapshot(publicRoomsQuery, async (snapshot) => {
@@ -77,11 +77,11 @@ const allRooms = computed(() => {
 });
 
 onMounted(async () => {
-  if (props.public && !props.private) subscribeToPublicRooms();
+  if (props.public && !props.private) await subscribeToPublicRooms();
   else if (props.private && !props.public) await subscribeToUserRooms();
   else {
-    subscribeToPublicRooms();
-    subscribeToUserRooms();
+    await subscribeToPublicRooms();
+    await subscribeToUserRooms();
   }
   listLoading.value = false;
 });
@@ -93,7 +93,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <q-list bordered separator>
+  <q-list class="rounded-borders" bordered separator>
     <template v-if="listLoading">
       <q-item>
         <div class="col">
@@ -105,6 +105,7 @@ onUnmounted(() => {
     <template v-else>
       <q-item
         v-if="
+          !listLoading &&
           (props.private
             ? userChatrooms.length
             : props.public

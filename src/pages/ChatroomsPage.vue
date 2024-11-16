@@ -77,7 +77,7 @@ const handleCreateRoom = async (
 <template>
   <div class="q-pa-md q-gutter-md">
     <div class="flex justify-between items-center">
-      <div class="text-h4 text-weight-bold">Chats</div>
+      <div class="text-h5 text-weight-bold">Your Chatrooms</div>
       <q-btn
         icon="add"
         color="pink-5"
@@ -87,7 +87,12 @@ const handleCreateRoom = async (
       />
     </div>
     <Suspense>
-      <ChatList />
+      <ChatList private />
+    </Suspense>
+
+    <div class="text-h6 text-weight-bold">Public chatrooms</div>
+    <Suspense>
+      <ChatList public />
     </Suspense>
   </div>
 

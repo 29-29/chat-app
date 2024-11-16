@@ -1,41 +1,31 @@
-# Chat App (chat-app)
+# Ahmad Chat App
 
-A Quasar Project
+A side project I started as I was too excited to get started with our scrum project, [MSU-Students/student-advising-portal](https://github.com/MSU-Students/student-advising-portal).
 
-## Install the dependencies
+## Development
+
+Make sure `firebase-tools` is installed on your machine with:
+
 ```bash
-yarn
-# or
-npm install
+npm i -g firebase-tools
 ```
 
-### Start the app in development mode (hot-code reloading, error reporting, etc.)
+And have your Firebase emulators started with:
+
 ```bash
+firebase emulators:start
+```
+
+Then set your environment variable to development in order to use the emulators instead of the servers:
+
+```bash
+set NODE_ENV "development"
+```
+
+And blast off!
+
+```bash
+npm run dev
+# or
 quasar dev
 ```
-
-
-### Lint the files
-```bash
-yarn lint
-# or
-npm run lint
-```
-
-
-### Format the files
-```bash
-yarn format
-# or
-npm run format
-```
-
-
-
-### Build the app for production
-```bash
-quasar build
-```
-
-### Customize the configuration
-See [Configuring quasar.config.js](https://v2.quasar.dev/quasar-cli-vite/quasar-config-js).

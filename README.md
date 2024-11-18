@@ -4,22 +4,24 @@ A side project I started as I was too excited to get started with our scrum proj
 
 ## Development
 
-Make sure `firebase-tools` is installed on your machine with:
+Make sure to install the packages first with:
 
 ```bash
-npm i -g firebase-tools
-```
-
-And have your Firebase emulators started with:
-
-```bash
-firebase emulators:start
+npm i
 ```
 
 Then set your environment variable to development in order to use the emulators instead of the servers:
 
 ```bash
 set NODE_ENV "development"
+```
+
+Start the firebase emulators:
+
+```bash
+npm run firebase
+# or
+firebase emulators:start
 ```
 
 And blast off!

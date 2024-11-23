@@ -1,13 +1,14 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useAuth } from 'src/composables/auth';
+import AvatarComp from 'src/components/AvatarComp.vue';
 
 const { isLoggedIn, user, handleSignOut } = useAuth();
 
 // Use computed properties instead of manual syncing
 const userData = computed(() => ({
   name: user.value?.displayName || '',
-  photoURL: user.value?.photoURL || '',
+  photoURL: (user.value?.photoURL as string) || '',
 }));
 
 // Loading state based on user availability
@@ -25,9 +26,7 @@ const userLoading = computed(() => !user.value);
           </div>
           <div v-else class="q-mx-sm row q-gutter-sm items-center">
             <div>{{ userData.name }}</div>
-            <q-avatar size="md">
-              <img :src="userData.photoURL" />
-            </q-avatar>
+            <AvatarComp :url="user?.photoURL || ''" />
           </div>
           <div>
             <q-btn

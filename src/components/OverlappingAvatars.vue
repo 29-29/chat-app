@@ -2,15 +2,30 @@
 import { computed } from 'vue';
 import { User } from './models';
 
-const props = defineProps<{
-  users: User[];
-  left?: boolean;
-}>();
+import AvatarComp from './AvatarComp.vue';
+
+const props = defineProps({
+  users: {
+    type: Array<User>,
+    default: [],
+    required: true,
+  },
+  left: {
+    type: Boolean,
+    default: false,
+  },
+  white: {
+    type: Boolean,
+    default: false,
+  },
+});
 
 const visibleUsers = computed(() => {
   const users = props.users.slice(0, 3);
+
   return props.left ? users.reverse() : users;
 });
+
 const remainingCount = computed(() => Math.max(0, props.users.length - 3));
 </script>
 
@@ -26,7 +41,8 @@ const remainingCount = computed(() => Math.max(0, props.users.length - 3));
       >
         +{{ remainingCount }}
       </q-badge>
-      <q-avatar
+
+      <avatar-comp
         v-for="(user, index) in visibleUsers"
         :key="user.id"
         size="sm"
@@ -34,9 +50,11 @@ const remainingCount = computed(() => Math.max(0, props.users.length - 3));
         :style="`${left ? 'right' : 'left'}: ${index * 0.75}em; z-index: ${
           left ? index + 1 : visibleUsers.length - index
         }`"
+        :white="white"
       >
         <img :src="user.photoURL || ''" class="avatar-img" />
-      </q-avatar>
+      </avatar-comp>
+
       <q-tooltip>
         {{ props.users.map((user) => user.displayName).join('\n') }}
       </q-tooltip>

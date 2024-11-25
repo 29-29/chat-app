@@ -2,6 +2,7 @@
 import { computed } from 'vue';
 import { User } from './models';
 import { Timestamp } from 'firebase/firestore';
+import AvatarComp from './AvatarComp.vue';
 
 export interface MessageData {
   message: string;
@@ -22,9 +23,7 @@ const author = computed(
 
 <template>
   <div class="row items-center no-wrap q-pa-sm">
-    <q-avatar size="32px" class="q-mr-md">
-      <img :src="avatar" />
-    </q-avatar>
+    <avatar-comp :url="avatar" class="q-mr-md" />
     <div class="column">
       <span class="text-caption">{{ author }}</span>
       <span class="text-body1">

@@ -63,66 +63,35 @@ const remainingCount = computed(() => Math.max(0, props.users.length - 3));
 </template>
 
 <style lang="sass" scoped>
-
 .overlapping-container
-
   position: relative
-
   width: 3em
-
   height: 2em
-
   display: flex
-
   align-items: center
 
-
-
 .align-right
-
   position: relative
-
   left: 100%
-
   transform: translateX(-100%)
 
-
-
 .overlapping
-
   position: absolute
-
-
 
 .avatar-img
-
   border: 2px solid $pink-8
-
   border-radius: 50%
 
-
-
 .remaining-badge
-
   position: absolute
-
   right: -2em
-
   min-width: 1.125em
-
   height: 1.125em
-
   font-size: 0.625em
-
   padding: 0 0.25em
-
   z-index: 4
 
-
-
 .badge-left
-
   right: unset
-
   left: -4em
 </style>

@@ -26,7 +26,7 @@ const userLoading = computed(() => !user.value);
           </div>
           <div v-else class="q-mx-sm row q-gutter-sm items-center">
             <div>{{ userData.name }}</div>
-            <AvatarComp :url="user?.photoURL || ''" />
+            <AvatarComp :url="user?.photoURL || ''" white />
           </div>
           <div>
             <q-btn

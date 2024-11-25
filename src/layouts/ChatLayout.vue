@@ -49,7 +49,7 @@ onUnmounted(() => {
           </div>
           <div v-else class="flex items-center q-gutter-sm">
             <span class="text-weight-bold">{{ room.name }}</span>
-            <OverlappingAvatars :users="chatUsers" />
+            <OverlappingAvatars :users="chatUsers" white />
           </div>
         </q-toolbar-title>
 
